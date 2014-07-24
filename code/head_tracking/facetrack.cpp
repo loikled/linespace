@@ -3,7 +3,9 @@
 #include <iterator>
 #include <cctype>
 #include <math.h>
+#include <QDebug>
 
+#include "opencv2/video/tracking.hpp"
 #define WEBCAM_WINDOW "webcam"
 
 using namespace std;
@@ -46,7 +48,9 @@ Facetrack::Facetrack(string pCascadeFile)
       currentFace_(0,0,0,0),
       newFaceFound_(false),
       scale_(MOVE_SCALE),
-      fov_(WEBCAM_FOV)
+      fov_(WEBCAM_FOV),
+      findHead_(true),
+      firstFeatures_(true)
 {
     head_.x = 0;
     head_.z = 5.0;
@@ -78,7 +82,6 @@ void Facetrack::init(void)
     {
         throw string("Cascade file not found: ") + string(path);
     }
-
 }
 
 void Facetrack::showRaw(void)
@@ -105,6 +108,14 @@ void Facetrack::drawFace(void)
               cvPoint(cvRound(face.x + face.width-1),
                       cvRound(face.y + face.height-1)),
               color, 3, 8, 0);
+    drawFeatures();
+}
+
+void Facetrack::drawFeatures(void){
+    for( size_t i = 0; i < corners_.size(); i++ )
+    {
+        cv::circle(frameCpy_, corners_[i], 2, cv::Scalar( 255. ),-1);
+    }
 }
 
 QPixmap Facetrack::getPixmap(void)
@@ -130,6 +141,73 @@ void Facetrack::getNewImg(void)
     }
 }
 
+//remove bad features that are too far from the cluster
+//base on the mean squared error and standard deviation
+void Facetrack::remove_bad_features(float pStandardDeviationTreshold){
+    Point2f avg(0,0);
+    for (auto& f: corners_){
+        avg += f;
+    }
+    avg.x /= corners_.size();
+    avg.y /= corners_.size();
+
+    float se = 0, mse = 0; //mean squared error
+    for (auto& f: corners_){
+       se += (f.x-avg.x)*(f.x-avg.x) + (f.y-avg.y)*(f.y-avg.y);
+    }
+    mse = se / corners_.size();
+
+    for (size_t i = 0; i < corners_.size(); ++i){
+        Point2d f = corners_[i];
+        float std_err = ((f.x-avg.x)*(f.x-avg.x) + (f.y-avg.y)*(f.y-avg.y))/mse;
+        if(std_err > pStandardDeviationTreshold){
+            corners_.erase(corners_.begin()+i); //should use a list for efficient deletion
+        }
+    }
+}
+
+//fit the face ellipse from the feature points
+Rect Facetrack::faceFromPoints(void){
+    Rect face;
+    //compute average of all feature points
+    Point2f avg(0,0), min(-1,-1), max(-1,-1);
+    for (auto& f: corners_){
+        avg += f;
+        if (min.x == -1 or min.x > f.x)
+            min.x = f.x;
+        if (max.x == -1 or max.x < f.x)
+            max.x = f.x;
+        if (min.y == -1 or min.y > f.y)
+            min.y = f.y;
+        if (max.y == -1 or max.y < f.y)
+            max.y = f.y;
+    }
+    avg.x /= corners_.size();
+    avg.y /= corners_.size();
+    int dx = (int)(max.x - min.x);
+    int dy = (int)(max.y - min.y);
+    face.x = avg.x-dx/2;
+    face.y = avg.y-dx/2;
+    face.width = dx;
+    face.height = dy;
+    return face;
+}
+
+/*features were detected in the face region, need
+ * to translate coordinates back in original image
+*/
+void Facetrack::rescaleFeatures(Rect face_region)
+{
+    for(auto& p : corners_){
+        p.x += face_region.x;
+        p.y += face_region.y;
+    }
+}
+
+void Facetrack::addFeatures(Mat& img){
+    Mat roi = Mat(img.rows, img.cols, img.depth());
+}
+
 void Facetrack::detectHead(void)
 {
     Mat gray;
@@ -139,27 +217,66 @@ void Facetrack::detectHead(void)
     /*We use the haarcascade classifier
      * only take the first (biggest) face found
      */
-    cascade_.detectMultiScale( gray, faces,
-           1.1, 2, 0
-           |CV_HAAR_FIND_BIGGEST_OBJECT
-           |CV_HAAR_DO_ROUGH_SEARCH,
-           Size(10, 10));
+    equalizeHist(gray,gray);
+    if (findHead_){
+        cascade_.detectMultiScale( gray, faces,
+               1.1, 2, 0
+               |CV_HAAR_FIND_BIGGEST_OBJECT
+               |CV_HAAR_DO_ROUGH_SEARCH,
+               Size(10, 10));
+        if (faces.size() > 0){
+            findHead_ = false;
+            firstFeatures_ = true;
+            detect_box_ = faces[0];
+        }
+    }
 
+    Mat crop = gray(detect_box_).clone();
     //take coordinates of first face found
-    if( faces.size() > 0 )
-    {
-        stabilize(faces[0]);
+    if( firstFeatures_){
+
+        goodFeaturesToTrack(crop,
+                            last_corners_,
+                            maxCorners_,
+                            qualityLevel_,
+                            minDistance_,
+                            goodFeaturesMask_,
+                            blockSize_,
+                            useHarrisDetector_,
+                            k_ );
+        previous_img = crop;
+        firstFeatures_ = false;
     }
-    else
-    {
-        //recenter the camera
-        Rect center;
-        center.x = frameCpy_.cols/2 - 50;
-        center.y = frameCpy_.rows/2 - 50;
-        center.width = 100;
-        center.height = 100;
-        stabilize(center);
-    }
+        next_img = crop;
+        vector<uchar> status;
+        vector<float> err;
+        calcOpticalFlowPyrLK(previous_img,
+                             next_img,
+                             last_corners_,
+                             corners_,
+                             status,
+                             err);
+        remove_bad_features(2.5f);
+
+        if (corners_.size() < min_features_){
+            expand_roi_ = expand_roi_ini_ * expand_roi_;
+            addFeatures(next_img);
+        }
+        last_corners_ = corners_;
+
+        float succes = 0;
+        for (auto& s : status){
+            if ( s )
+                succes++;
+        }
+        succes = succes*100/status.size();
+        if (succes < 80)
+            findHead_ = true;
+
+        rescaleFeatures(detect_box_);
+        currentFace_ = coord_t(faceFromPoints());
+        newFaceFound_ = true;
+        WTLeeTrackPosition();
  }
 
 /* Convert the rectangle found in 2D to 3D pos in unit box

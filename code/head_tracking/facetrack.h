@@ -57,9 +57,36 @@ private:
     bool newFaceFound_;
     double scale_;
     double fov_;
-
     head_t head_;
 
+    //GoodfeaturesToTack parameters
+    std::vector< cv::Point2f > corners_, last_corners_;
+    const int maxCorners_ = 30;
+    const double qualityLevel_ = 0.01;
+    const double minDistance_ = 20.;
+
+     // mask – The optional region of interest. If the image is not empty (then it
+     // needs to have the type CV_8UC1 and the same size as image ), it will specify
+     // the region in which the corners are detected
+     cv::Mat goodFeaturesMask_;
+
+     // blockSize – Size of the averaging block for computing derivative covariation
+     // matrix over each pixel neighborhood, see cornerEigenValsAndVecs()
+     const int blockSize_ = 3;
+
+     // useHarrisDetector – Indicates, whether to use operator or cornerMinEigenVal()
+     const bool useHarrisDetector_ = false;
+
+     // k – Free parameter of Harris detector
+     const double k_ = 0.04;
+
+     bool findHead_;
+     bool firstFeatures_;
+     cv::Mat previous_img, next_img;
+     Rect detect_box_, track_box_;
+    int min_features_ = 10;
+    float expand_roi_ = 1.02;
+    float expand_roi_ini_ = 1.02;
 public:
     Facetrack(string pCascadeFile = CASCADE);
     ~Facetrack();
@@ -68,6 +95,8 @@ public:
     void getNewImg(void);
     void showRaw(void);
     void drawFace(void);
+    void drawFeatures(void);
+    void rescaleFeatures(Rect face_region);
     void showFace(void);
     void detectHead(void);
     QPixmap getPixmap(void);
@@ -76,7 +105,9 @@ public:
     QImage putImage(const Mat& mat);
     void stabilize(Rect pNewFace);
     bool isNewFace(void);
-
+    Rect faceFromPoints(void);
+    void remove_bad_features(float pStandardDeviationTreshold);
+    void addFeatures(Mat& img);
 signals:
     void signalNewHeadPos(head_t pNewPos);
 

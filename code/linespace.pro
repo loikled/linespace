@@ -6,7 +6,7 @@
 
 QT       += core gui widgets opengl
 
-TARGET = holotouch
+TARGET = linespace
 CONFIG   -= app_bundle
 
 TEMPLATE = app

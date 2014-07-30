@@ -22,6 +22,7 @@ LIBS += -lopencv_core
 LIBS += -lopencv_imgproc
 LIBS += -lopencv_highgui
 LIBS += -lopencv_objdetect
+LIBS += -lopencv_video
 
 #opengl lib
 LIBS += -lGLU

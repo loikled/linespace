@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QDebug>
 
+
 #define SELECT_TRESHOLD 60.0f //hand opening in mm
 #define RELEASE_TRESHOLD 80.0f //hand opening in mm
 #define HOLD_TIME 10 //nb of frame with hand closed
@@ -11,6 +12,7 @@
 #define ANGLE_ZOOM_TRESHOLD 20.0f // pitch of left hand in degrees
 #define ZOOM_FACTOR 0.01f // each frame in zoom moves by this.
 #define RESWIPE_INTERVAL 200 //minimum time between 2 swipes in ms
+
 
 LeapListener::LeapListener()
     : rightHand_(-1),
@@ -65,7 +67,10 @@ void LeapListener::onFrame(const Controller& controller)
         rightHand_ = hand.id();
         Vector pos = hand.palmPosition();
 
-
+        if(hand.fingers().count() >= 1)
+        {
+            fingerPos_ = hand.fingers().leftmost().tipPosition();
+        }
         //closed hand hard to detect
         // closed = select cube
         float handOpening = 0;
@@ -331,4 +336,9 @@ void LeapListener::circleEvent()
         event = new HandEvent(HandEvent::Circle, rPos_);
         QApplication::postEvent(receiver_, event);
     }
+}
+
+Leap::Vector LeapListener::getFingerPos()
+{
+    return fingerPos_;
 }

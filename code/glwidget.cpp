@@ -57,6 +57,9 @@ void GlWidget::initializeGL()
 {
     loadTexture("../code/ressources/box.png", CRATE);
     loadTexture("../code/ressources/metal.jpg", METAL);
+    lastFingerPos.x = 0.0;
+    lastFingerPos.y = 0.0;
+    lastFingerPos.z = 0.0;
 
     glEnable(GL_TEXTURE_2D);
 
@@ -85,20 +88,22 @@ void GlWidget::paintGL()
     // ============================
     // Render Scene
     // ============================
-
     // clear the back buffer and z buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // disable lighting
-    glDisable(GL_LIGHTING);
+    //glDisable(GL_LIGHTING);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     //place the camera like the real head and look at the center
     gluLookAt(head_.x,head_.y,head_.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,0.0f);
-    drawCube(CRATE, 0, 0, 0, 0.5);
+    //drawCube(CRATE, 0, 0, 0, 0.5);
     // Objects
-    drawPalmPos();
+    //drawPalmPos();
+
+    // to see the windows draw a little line
+    drawLine(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.01,0.0,0.0));
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -114,6 +119,29 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
     glTexImage2D( GL_TEXTURE_2D, 0, 3, qim_Texture.width(), qim_Texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, qim_Texture.bits() );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+}
+
+
+//Draw line
+
+void GlWidget::drawLine(Leap::Vector firstPoint,Leap::Vector secondPoint)
+{
+    glLineWidth(5.5);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINES);
+    char first[30];
+    char second[30];
+    sprintf(first,"first pos x : %f",firstPoint.x);
+    sprintf(second,"second pos x : %f",secondPoint.x);
+
+    firstPoint /= 10;
+    secondPoint /= 10;
+    qDebug() << first << endl << second;
+    glVertex3f(firstPoint.x, firstPoint.y-4, firstPoint.z);
+    glVertex3f(secondPoint.x, secondPoint.y-4, secondPoint.z);
+    glEnd();
+    swapBuffers();
+
 }
 
 //Draw 6 squares and apply the texture on each: absolute coordinates for the center
@@ -216,9 +244,11 @@ int GlWidget::closestItem(float pTreshold)
 
 void GlWidget::customEvent(QEvent* pEvent)
 {
+    Leap::Vector fingerPos;
     HandEvent* event = dynamic_cast<HandEvent*>(pEvent);
     if ( event )
     {
+
         float offset = 0;
         //handle type of event
         switch (event->type() )
@@ -249,8 +279,15 @@ void GlWidget::customEvent(QEvent* pEvent)
         case HandEvent::Grabbed:
             break;
        case HandEvent::Moved:
+
             //convert normalize hand pos to our interaction box
-            palmPos_ = (event->pos()+Vector(-0.5f,-0.5f,-1.0f))*boxSize_*1.5f;
+            //palmPos_ = (event->pos()+Vector(-0.5f,-0.5f,-1.0f))*boxSize_*1.5f;
+
+            // Using finger pos
+            fingerPos = leapListener_.getFingerPos();
+            drawLine(lastFingerPos,fingerPos);
+            lastFingerPos = fingerPos;
+
             break;
        case HandEvent::Circle:
             qDebug()<<"Circle Event!";

@@ -32,6 +32,9 @@ private:
     //right hand palm position
     Leap::Vector rPos_;
 
+    // most left finger on the right hand
+    Leap::Vector fingerPos_;
+
     HandEvent::Selection_t  selectionMode_;
     QObject* receiver_;
     QTimer* swipeTimer_;
@@ -47,6 +50,8 @@ public:
     void onDisconnect(const Controller&);
     void onExit(const Controller&);
     void onFrame(const Controller&);
+
+    Leap::Vector getFingerPos();
 
     /*update the tracked item
      *called from the collision

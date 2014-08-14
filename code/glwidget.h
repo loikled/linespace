@@ -50,6 +50,7 @@ private:
     //head positions in cm relative to screen center.
     head_t head_;
     Leap::Vector palmPos_;
+    Leap::Vector lastFingerPos;
     HandEvent::Selection_t selectionMode_;
     float boxSize_;
     int gridSize_;
@@ -72,6 +73,7 @@ public:
     void paintGL();
 
     void loadTexture(QString textureName, texId_t pId);
+    void drawLine(Leap::Vector firstPoint,Leap::Vector secondPoint);
     void drawCube(texId_t PtextureId,
                   float pCenterX,
                   float pCenterY,

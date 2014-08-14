@@ -65,6 +65,9 @@ void mainwindow::init(void)
     setCentralWidget(centerWidget);
 
     connect(&tracker_, SIGNAL(signalNewHeadPos(head_t)), glView_, SLOT(slotNewHead(head_t)));
+
+
+
 }
 
 void mainwindow::slotStart()

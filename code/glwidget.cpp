@@ -60,6 +60,9 @@ void GlWidget::initializeGL()
     lastFingerPos.x = 0.0;
     lastFingerPos.y = 0.0;
     lastFingerPos.z = 0.0;
+    writing_ = false;
+    line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(1.0,0.0,0.0));
+    line_list.append(line);
 
     glEnable(GL_TEXTURE_2D);
 
@@ -69,6 +72,8 @@ void GlWidget::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glEnable(GL_MULTISAMPLE);
+
 }
 
 void GlWidget::resizeGL(int width, int height)
@@ -92,18 +97,27 @@ void GlWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // disable lighting
-    //glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
     //place the camera like the real head and look at the center
     gluLookAt(head_.x,head_.y,head_.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,0.0f);
     //drawCube(CRATE, 0, 0, 0, 0.5);
     // Objects
     //drawPalmPos();
-
+    glLineWidth(5.5);
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINES);
     // to see the windows draw a little line
-    drawLine(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.01,0.0,0.0));
+   // drawLine(Leap::Vector(0.0,0.0,0.0),Leap::Vector(10.0,0.0,0.0));
+
+    foreach (line_t line, line_list) {
+        line.firstPoint_ /= 10;
+        line.secondPoint_ /= 10;
+        glVertex3f(line.firstPoint_.x, line.firstPoint_.y-4, line.firstPoint_.z);
+        glVertex3f(line.secondPoint_.x, line.secondPoint_.y-4, line.secondPoint_.z);
+    }
+    glEnd();
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -134,13 +148,12 @@ void GlWidget::drawLine(Leap::Vector firstPoint,Leap::Vector secondPoint)
     sprintf(first,"first pos x : %f",firstPoint.x);
     sprintf(second,"second pos x : %f",secondPoint.x);
 
-    firstPoint /= 10;
-    secondPoint /= 10;
+   // firstPoint /= 10;
+   // secondPoint /= 10;
     qDebug() << first << endl << second;
-    glVertex3f(firstPoint.x, firstPoint.y-4, firstPoint.z);
-    glVertex3f(secondPoint.x, secondPoint.y-4, secondPoint.z);
+    glVertex3f(firstPoint.x, firstPoint.y, firstPoint.z);
+    glVertex3f(secondPoint.x, secondPoint.y, secondPoint.z);
     glEnd();
-    swapBuffers();
 
 }
 
@@ -285,9 +298,13 @@ void GlWidget::customEvent(QEvent* pEvent)
 
             // Using finger pos
             fingerPos = leapListener_.getFingerPos();
-            drawLine(lastFingerPos,fingerPos);
+            if(writing_)
+            {
+                //drawLine(lastFingerPos,fingerPos);
+                line_t line(lastFingerPos,fingerPos);
+                line_list.append(line);
+            }
             lastFingerPos = fingerPos;
-
             break;
        case HandEvent::Circle:
             qDebug()<<"Circle Event!";

@@ -41,10 +41,31 @@ void mainwindow::init(void)
     glView_ = new GlWidget(this);
     hLayout->addWidget(glView_);
 
+
+
+    // Record and play drawing
+    QPushButton* button = new QPushButton("Record");
+    connect(button, SIGNAL(clicked()), this, SLOT(slotRecord()));
+    QPushButton* button2 = new QPushButton("Stop");
+    connect(button2, SIGNAL(clicked()), this, SLOT(slotStop()));
+    QPushButton* button3 = new QPushButton("Play");
+    connect(button3, SIGNAL(clicked()), this, SLOT(slotPlay()));
+    button->setMaximumWidth(80);
+    button2->setMaximumWidth(80);
+    button3->setMaximumWidth(80);
+
+    QGridLayout* layout = new QGridLayout();
+    layout->addWidget(button);
+    layout->addWidget(button2);
+    layout->addWidget(button3);
+    hLayout->addItem(layout);
+
+
+
+
     QMenu* menu = menuBar()->addMenu("&Display");
     QAction* actionStart = new QAction("Start/Stop", this);
     QAction* actionHide = new QAction("Hide Webcam", this);
-
     menu->addAction(actionStart);
     menu->addAction(actionHide);
 
@@ -68,6 +89,19 @@ void mainwindow::init(void)
 
 
 
+}
+
+void mainwindow::slotRecord()
+{
+    qDebug() << "record";
+}
+void mainwindow::slotStop()
+{
+    qDebug() << "stop";
+}
+void mainwindow::slotPlay()
+{
+    qDebug() << "play";
 }
 
 void mainwindow::slotStart()
@@ -135,6 +169,16 @@ void mainwindow::keyPressEvent(QKeyEvent *keyEvent)
             break;
         case Qt::Key_H:
             webcamView_->isHidden()? webcamView_->show() : webcamView_->hide();
+            break;
+        case Qt::Key_W :
+            if(glView_->writing_)
+            {
+                glView_->writing_ = false;
+            }
+            else
+            {
+                glView_->writing_ = true;
+            }
             break;
         case Qt::Key_Space:
             slotStart();

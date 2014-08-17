@@ -37,6 +37,9 @@ signals:
 
 public slots:
     void slotStart();
+    void slotRecord();
+    void slotStop();
+    void slotPlay();
 
 private slots:
    void slotGetNewFrame();

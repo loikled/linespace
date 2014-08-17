@@ -38,8 +38,15 @@ public:
         bool drawn_;
         //constructor
         item_t(float pSize = 1.0f, texId_t pText = CRATE);
-    };
+    };    
     typedef QSet<int> GrabList_t;
+    //simple way to describe line
+    struct line_t {
+        Leap::Vector firstPoint_;
+        Leap::Vector secondPoint_;
+        //constructor
+        line_t(Leap::Vector firstPoint, Leap::Vector secondPoint){firstPoint_ = firstPoint;secondPoint_ = secondPoint;}
+    };
 
 private:
     LeapListener leapListener_;
@@ -51,6 +58,7 @@ private:
     head_t head_;
     Leap::Vector palmPos_;
     Leap::Vector lastFingerPos;
+    QList<line_t> line_list;
     HandEvent::Selection_t selectionMode_;
     float boxSize_;
     int gridSize_;
@@ -59,6 +67,7 @@ private:
     float maxZoom_;
     bool grabbing_;
 
+
     mutable QMutex mutexList_;
     GrabList_t grabList_;
     QList<Leap::Vector> lastPos_;
@@ -66,6 +75,9 @@ private:
 public:
     GlWidget(QWidget *parent = 0);
     ~GlWidget();
+
+    //temp test writing allowed or not
+     bool writing_;
 
     //opengl functions
     void initializeGL();

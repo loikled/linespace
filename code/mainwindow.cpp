@@ -39,7 +39,15 @@ void mainwindow::init(void)
     timer_ = new QTimer(this);
 
     glView_ = new GlWidget(this);
-    hLayout->addWidget(glView_);
+
+
+    // View and slider layout
+    QGridLayout* vlayout = new QGridLayout();
+    QSlider* slider = new QSlider();
+    slider->setOrientation(Qt::Horizontal);
+    vlayout->addWidget(glView_);
+    vlayout->addWidget(slider);
+    hLayout->addItem(vlayout);
 
 
 
@@ -58,6 +66,7 @@ void mainwindow::init(void)
     layout->addWidget(button);
     layout->addWidget(button2);
     layout->addWidget(button3);
+
     hLayout->addItem(layout);
 
 

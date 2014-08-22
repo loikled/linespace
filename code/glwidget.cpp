@@ -57,11 +57,8 @@ void GlWidget::initializeGL()
 {
     loadTexture("../code/ressources/box.png", CRATE);
     loadTexture("../code/ressources/metal.jpg", METAL);
-    lastFingerPos.x = 0.0;
-    lastFingerPos.y = 0.0;
-    lastFingerPos.z = 0.0;
     writing_ = false;
-    line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(1.0,0.0,0.0));
+    line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.0,0.0,0.0),0);
     line_list.append(line);
 
     glEnable(GL_TEXTURE_2D);
@@ -73,6 +70,7 @@ void GlWidget::initializeGL()
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_MULTISAMPLE);
+
 
 }
 
@@ -98,6 +96,7 @@ void GlWidget::paintGL()
 
     // disable lighting
     glDisable(GL_LIGHTING);
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     //place the camera like the real head and look at the center
@@ -112,8 +111,14 @@ void GlWidget::paintGL()
    // drawLine(Leap::Vector(0.0,0.0,0.0),Leap::Vector(10.0,0.0,0.0));
 
     foreach (line_t line, line_list) {
+        if(line.timePainted_> recordTimer.elapsed())
+        {
+            continue;
+        }
+
         line.firstPoint_ /= 10;
         line.secondPoint_ /= 10;
+
         glVertex3f(line.firstPoint_.x, line.firstPoint_.y-4, line.firstPoint_.z);
         glVertex3f(line.secondPoint_.x, line.secondPoint_.y-4, line.secondPoint_.z);
     }
@@ -133,6 +138,16 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
     glTexImage2D( GL_TEXTURE_2D, 0, 3, qim_Texture.width(), qim_Texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, qim_Texture.bits() );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+}
+
+
+
+
+// record functions
+
+void GlWidget::startRecord()
+{
+    recordTimer.restart();
 }
 
 
@@ -301,7 +316,7 @@ void GlWidget::customEvent(QEvent* pEvent)
             if(writing_)
             {
                 //drawLine(lastFingerPos,fingerPos);
-                line_t line(lastFingerPos,fingerPos);
+                line_t line(lastFingerPos,fingerPos,recordTimer.elapsed());
                 line_list.append(line);
             }
             lastFingerPos = fingerPos;

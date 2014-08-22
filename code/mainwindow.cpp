@@ -93,7 +93,7 @@ void mainwindow::init(void)
 
 void mainwindow::slotRecord()
 {
-    qDebug() << "record";
+   glView_->startRecord();
 }
 void mainwindow::slotStop()
 {
@@ -102,6 +102,7 @@ void mainwindow::slotStop()
 void mainwindow::slotPlay()
 {
     qDebug() << "play";
+    glView_->startRecord();
 }
 
 void mainwindow::slotStart()

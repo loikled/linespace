@@ -44,8 +44,9 @@ public:
     struct line_t {
         Leap::Vector firstPoint_;
         Leap::Vector secondPoint_;
+        int timePainted_;
         //constructor
-        line_t(Leap::Vector firstPoint, Leap::Vector secondPoint){firstPoint_ = firstPoint;secondPoint_ = secondPoint;}
+        line_t(Leap::Vector firstPoint, Leap::Vector secondPoint, int timePainted){firstPoint_ = firstPoint;secondPoint_ = secondPoint;timePainted_ = timePainted;}
     };
 
 private:
@@ -53,6 +54,9 @@ private:
     Leap::Controller controller_;
 
     GLuint texture_[NB_TEXTURE];
+
+    //record and display timer
+    QTime recordTimer;
 
     //head positions in cm relative to screen center.
     head_t head_;
@@ -76,8 +80,12 @@ public:
     GlWidget(QWidget *parent = 0);
     ~GlWidget();
 
-    //temp test writing allowed or not
+    //writing allowed or not TODO change the way to write or not write
      bool writing_;
+
+    //recording function to start or stop timer
+    void startRecord();
+    void stopRecord();
 
     //opengl functions
     void initializeGL();

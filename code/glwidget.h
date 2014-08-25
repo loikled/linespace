@@ -55,8 +55,13 @@ private:
 
     GLuint texture_[NB_TEXTURE];
 
-    //record and display timer
+    //record and display timer and maxValueTimer
     QTime recordTimer;
+    int maxRecordTimer = 0;
+    int curentRecordTime = 0;
+    bool recording_ = false;
+    bool playing_ = false;
+
 
     //head positions in cm relative to screen center.
     head_t head_;
@@ -83,9 +88,11 @@ public:
     //writing allowed or not TODO change the way to write or not write
      bool writing_;
 
-    //recording function to start or stop timer
+    //recording function to start or stop timer, or set new value to the timer
     void startRecord();
     void stopRecord();
+    void play();
+    void setNewTime(int time);
 
     //opengl functions
     void initializeGL();

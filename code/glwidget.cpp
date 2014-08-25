@@ -36,6 +36,7 @@ GlWidget::GlWidget(QWidget *parent) :
     maxZoom_(BOX_SIZE),
     grabbing_(false)
 {
+
     leapListener_.setReceiver(this);
     controller_.addListener(leapListener_);
     head_.x = 0.0;
@@ -58,6 +59,9 @@ void GlWidget::initializeGL()
     loadTexture("../code/ressources/box.png", CRATE);
     loadTexture("../code/ressources/metal.jpg", METAL);
     writing_ = false;
+ recordTimer.restart();
+
+    // Just display the drawing even without any drawing yet
     line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.0,0.0,0.0),0);
     line_list.append(line);
 
@@ -107,11 +111,15 @@ void GlWidget::paintGL()
     glLineWidth(5.5);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
-    // to see the windows draw a little line
-   // drawLine(Leap::Vector(0.0,0.0,0.0),Leap::Vector(10.0,0.0,0.0));
+
+
+    if(recording_ or playing_)
+    {
+        curentRecordTime += recordTimer.elapsed();
+    }
 
     foreach (line_t line, line_list) {
-        if(line.timePainted_> recordTimer.elapsed())
+        if(line.timePainted_> curentRecordTime)
         {
             continue;
         }
@@ -123,6 +131,10 @@ void GlWidget::paintGL()
         glVertex3f(line.secondPoint_.x, line.secondPoint_.y-4, line.secondPoint_.z);
     }
     glEnd();
+    if(maxRecordTimer < curentRecordTime + recordTimer.elapsed())
+    {
+        maxRecordTimer = curentRecordTime + recordTimer.elapsed();
+    }
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -147,6 +159,25 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
 
 void GlWidget::startRecord()
 {
+    recording_ = true;
+    recordTimer.restart();
+
+}
+
+void GlWidget::stopRecord()
+{
+    recording_ = false;
+    playing_ = false;
+}
+
+void GlWidget::play()
+{
+    playing_ = true;
+}
+
+void GlWidget::setNewTime(int time)
+{
+    curentRecordTime = (time*maxRecordTimer)/1000;
     recordTimer.restart();
 }
 
@@ -313,10 +344,10 @@ void GlWidget::customEvent(QEvent* pEvent)
 
             // Using finger pos
             fingerPos = leapListener_.getFingerPos();
-            if(writing_)
+            if(writing_ and recording_)
             {
                 //drawLine(lastFingerPos,fingerPos);
-                line_t line(lastFingerPos,fingerPos,recordTimer.elapsed());
+                line_t line(lastFingerPos,fingerPos,curentRecordTime + recordTimer.elapsed());
                 line_list.append(line);
             }
             lastFingerPos = fingerPos;

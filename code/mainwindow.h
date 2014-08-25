@@ -23,6 +23,7 @@ private:
     QPixmap imgWebcam_;
     QTimer* timer_;
     GlWidget* glView_;
+    QSlider* slider_;
 
 public:
     mainwindow(QWidget *parent = 0);
@@ -40,6 +41,7 @@ public slots:
     void slotRecord();
     void slotStop();
     void slotPlay();
+    void slotSliderMoved(int value);
 
 private slots:
    void slotGetNewFrame();

@@ -43,10 +43,14 @@ void mainwindow::init(void)
 
     // View and slider layout
     QGridLayout* vlayout = new QGridLayout();
-    QSlider* slider = new QSlider();
-    slider->setOrientation(Qt::Horizontal);
+    slider_ = new QSlider();
+    // to increase slider precision
+    slider_->setMaximum(1000);
+    connect(slider_, SIGNAL(sliderMoved(int)), this, SLOT(slotSliderMoved(int)));
+    connect(slider_, SIGNAL(sliderReleased()), this, SLOT(slotRecord()));
+    slider_->setOrientation(Qt::Horizontal);
     vlayout->addWidget(glView_);
-    vlayout->addWidget(slider);
+    vlayout->addWidget(slider_);
     hLayout->addItem(vlayout);
 
 
@@ -61,11 +65,14 @@ void mainwindow::init(void)
     button->setMaximumWidth(80);
     button2->setMaximumWidth(80);
     button3->setMaximumWidth(80);
+    QLineEdit* textBlock = new QLineEdit("todo display recording timer");
+    textBlock->setMaximumWidth(80);
 
     QGridLayout* layout = new QGridLayout();
     layout->addWidget(button);
     layout->addWidget(button2);
     layout->addWidget(button3);
+    layout->addWidget(textBlock);
 
     hLayout->addItem(layout);
 
@@ -100,18 +107,22 @@ void mainwindow::init(void)
 
 }
 
+void mainwindow::slotSliderMoved(int value)
+{
+    glView_->setNewTime(value);
+}
+
 void mainwindow::slotRecord()
 {
-   glView_->startRecord();
+    glView_->startRecord();
 }
 void mainwindow::slotStop()
 {
-    qDebug() << "stop";
+    glView_->stopRecord();
 }
 void mainwindow::slotPlay()
 {
-    qDebug() << "play";
-    glView_->startRecord();
+    glView_->play();
 }
 
 void mainwindow::slotStart()

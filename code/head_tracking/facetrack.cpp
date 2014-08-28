@@ -250,12 +250,20 @@ void Facetrack::detectHead(void)
         next_img = crop;
         vector<uchar> status;
         vector<float> err;
+        vector<cv::Point2f> all_corners;
         calcOpticalFlowPyrLK(previous_img,
                              next_img,
                              last_corners_,
-                             corners_,
+                             all_corners,
                              status,
                              err);
+        corners_.clear();
+
+        for(size_t i = 0; i < status.size(); ++i){
+            if (status[i])
+                corners_.push_back(all_corners[i]);
+        }
+
         remove_bad_features(2.5f);
 
         if (corners_.size() < min_features_){

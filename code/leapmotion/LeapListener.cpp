@@ -94,55 +94,6 @@ void LeapListener::onFrame(const Controller& controller)
             trackPrevious_ = true;
         }
 
-        //State machine to detect click
-        if (! grabbing_ )
-        {
-            switch(handState_)
-            {
-            case OPEN:
-                if (handOpening <= SELECT_TRESHOLD)
-                {
-                    countUp++;
-                    if ( countUp >= HOLD_TIME )
-                    {
-                        handState_ = CLOSE;
-                        countUp = 0;
-                    }
-                }
-                else
-                    countUp = 0;
-                break;
-            case CLOSE:
-                if ( handOpening >= RELEASE_TRESHOLD )
-                {
-                    countClose++;
-                    if ( countClose >= HOLD_TIME )
-                    {
-                        handState_ = OPEN;
-                        countClose = 0;
-                    }
-                }
-                else
-                    countClose = 0;
-                break;
-            default:
-                break;
-            }
-        }
-        else // consider hand always closed
-        {
-            if ( handOpening >= RELEASE_TRESHOLD )
-            {
-                countClose++;
-                if ( countClose >= HOLD_TIME )
-                {
-                    handState_ = OPEN;
-                    countClose = 0;
-
-                }
-            }
-        }
-
         InteractionBox box = frame.interactionBox();
         if ( box.isValid() )
             rPos_ = box.normalizePoint(pos, false);

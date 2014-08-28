@@ -56,18 +56,18 @@ private:
     GLuint texture_[NB_TEXTURE];
 
     //record and display timer and maxValueTimer
-    QTime recordTimer;
-    int maxRecordTimer = 0;
-    int curentRecordTime = 0;
-    bool recording_ = false;
-    bool playing_ = false;
+    QTime recordTimer_;
+    int maxRecordTimer_;
+    int curentRecordTime_;
+    bool recording_;
+    bool playing_;
 
 
     //head positions in cm relative to screen center.
     head_t head_;
     Leap::Vector palmPos_;
     Leap::Vector lastFingerPos;
-    QList<line_t> line_list;
+    QList<line_t> lineList_;
     HandEvent::Selection_t selectionMode_;
     float boxSize_;
     int gridSize_;

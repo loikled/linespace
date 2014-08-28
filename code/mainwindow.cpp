@@ -22,16 +22,16 @@ mainwindow::mainwindow(QWidget *parent) :
 
 void mainwindow::init(void)
 {
-
     QHBoxLayout* hLayout = new QHBoxLayout();
     hLayout->setContentsMargins(0,0,0,0);
 
     webcamView_ = new QLabel("Face View",this);
-    hLayout->addWidget(webcamView_);
+    webcamView_->setWindowFlags(Qt::Window);
+    webcamView_->setMinimumSize(250,250);
     webcamView_->hide();
 
     tracker_.init();
-    setWindowTitle("Holotouch");
+    setWindowTitle("Linespace");
     QWidget::showMaximized();
     webcamView_->setBackgroundRole(QPalette::Base);
     webcamView_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -42,7 +42,7 @@ void mainwindow::init(void)
 
 
     // View and slider layout
-    QGridLayout* vlayout = new QGridLayout();
+    QVBoxLayout* vlayout = new QVBoxLayout();
     slider_ = new QSlider();
     // to increase slider precision
     slider_->setMaximum(1000);
@@ -52,8 +52,6 @@ void mainwindow::init(void)
     vlayout->addWidget(glView_);
     vlayout->addWidget(slider_);
     hLayout->addItem(vlayout);
-
-
 
     // Record and play drawing
     QPushButton* button = new QPushButton("Record");
@@ -68,16 +66,13 @@ void mainwindow::init(void)
     QLineEdit* textBlock = new QLineEdit("todo display recording timer");
     textBlock->setMaximumWidth(80);
 
-    QGridLayout* layout = new QGridLayout();
-    layout->addWidget(button);
-    layout->addWidget(button2);
-    layout->addWidget(button3);
-    layout->addWidget(textBlock);
+    QVBoxLayout* buttonLayout = new QVBoxLayout();
+    buttonLayout->addWidget(button);
+    buttonLayout->addWidget(button2);
+    buttonLayout->addWidget(button3);
+    buttonLayout->addWidget(textBlock);
 
-    hLayout->addItem(layout);
-
-
-
+    hLayout->addItem(buttonLayout);
 
     QMenu* menu = menuBar()->addMenu("&Display");
     QAction* actionStart = new QAction("Start/Stop", this);
@@ -155,8 +150,10 @@ void mainwindow::keyPressEvent(QKeyEvent *keyEvent)
                 showMaximized();
                 menuBar()->show();
             }
-            else
+            else{
                 close();
+                QApplication::quit();
+            }
             break;
         case Qt::Key_F:
             if (isFullScreen())
@@ -225,7 +222,7 @@ void mainwindow::slotAbout()
     ss<<"This application is distributed as free software."
         <<"It uses headtracking with opencv to simulate augmented reality\n"
         <<"and leapmotion to track your hands.\n"
-        <<"Source code available on: <a href='https://github.com/loikled/holotouch'> LoikLed Github repository</a>";
+        <<"Source code available on: <a href='https://github.com/loikled/linespace'> LoikLed Github repository</a>";
     about.setTextFormat(Qt::RichText);
     about.setInformativeText(QString::fromStdString(ss.str()));
     about.setIcon(QMessageBox::Information);

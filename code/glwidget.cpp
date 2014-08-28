@@ -28,6 +28,10 @@ GlWidget::item_t::item_t(float pSize, texId_t pText)
 
 GlWidget::GlWidget(QWidget *parent) :
     Glview(60,parent),
+    maxRecordTimer_(0),
+    curentRecordTime_(0),
+    recording_(false),
+    playing_(false),
     selectionMode_(HandEvent::SINGLE),
     boxSize_(BOX_SIZE),
     gridSize_(0),
@@ -36,7 +40,6 @@ GlWidget::GlWidget(QWidget *parent) :
     maxZoom_(BOX_SIZE),
     grabbing_(false)
 {
-
     leapListener_.setReceiver(this);
     controller_.addListener(leapListener_);
     head_.x = 0.0;
@@ -47,6 +50,7 @@ GlWidget::GlWidget(QWidget *parent) :
     palmPos_.z = 5.0f;
 
     setCursor(Qt::BlankCursor);
+    lineList_.clear();
 }
 
 GlWidget::~GlWidget()
@@ -59,11 +63,11 @@ void GlWidget::initializeGL()
     loadTexture("../code/ressources/box.png", CRATE);
     loadTexture("../code/ressources/metal.jpg", METAL);
     writing_ = false;
- recordTimer.restart();
+    recordTimer_.restart();
 
     // Just display the drawing even without any drawing yet
     line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.0,0.0,0.0),0);
-    line_list.append(line);
+    lineList_.append(line);
 
     glEnable(GL_TEXTURE_2D);
 
@@ -74,8 +78,6 @@ void GlWidget::initializeGL()
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_MULTISAMPLE);
-
-
 }
 
 void GlWidget::resizeGL(int width, int height)
@@ -105,9 +107,10 @@ void GlWidget::paintGL()
     glLoadIdentity();
     //place the camera like the real head and look at the center
     gluLookAt(head_.x,head_.y,head_.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,0.0f);
-    //drawCube(CRATE, 0, 0, 0, 0.5);
+    glClearColor(0,0,0,0);
+    drawCube(CRATE, 0, 0, 0, 0.5);
     // Objects
-    //drawPalmPos();
+    drawPalmPos();
     glLineWidth(5.5);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
@@ -115,11 +118,11 @@ void GlWidget::paintGL()
 
     if(recording_ or playing_)
     {
-        curentRecordTime += recordTimer.elapsed();
+        curentRecordTime_ += recordTimer_.elapsed();
     }
 
-    foreach (line_t line, line_list) {
-        if(line.timePainted_> curentRecordTime)
+    foreach (line_t line, lineList_) {
+        if(line.timePainted_> curentRecordTime_)
         {
             continue;
         }
@@ -131,9 +134,9 @@ void GlWidget::paintGL()
         glVertex3f(line.secondPoint_.x, line.secondPoint_.y-4, line.secondPoint_.z);
     }
     glEnd();
-    if(maxRecordTimer < curentRecordTime + recordTimer.elapsed())
+    if(maxRecordTimer_ < curentRecordTime_ + recordTimer_.elapsed())
     {
-        maxRecordTimer = curentRecordTime + recordTimer.elapsed();
+        maxRecordTimer_ = curentRecordTime_ + recordTimer_.elapsed();
     }
 }
 
@@ -160,7 +163,7 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
 void GlWidget::startRecord()
 {
     recording_ = true;
-    recordTimer.restart();
+    recordTimer_.restart();
 
 }
 
@@ -177,8 +180,8 @@ void GlWidget::play()
 
 void GlWidget::setNewTime(int time)
 {
-    curentRecordTime = (time*maxRecordTimer)/1000;
-    recordTimer.restart();
+    curentRecordTime_ = (time*maxRecordTimer_)/1000;
+    recordTimer_.restart();
 }
 
 
@@ -340,15 +343,15 @@ void GlWidget::customEvent(QEvent* pEvent)
        case HandEvent::Moved:
 
             //convert normalize hand pos to our interaction box
-            //palmPos_ = (event->pos()+Vector(-0.5f,-0.5f,-1.0f))*boxSize_*1.5f;
+            palmPos_ = (event->pos()+Vector(-0.5f,-0.5f,-1.0f))*boxSize_*1.5f;
 
             // Using finger pos
             fingerPos = leapListener_.getFingerPos();
             if(writing_ and recording_)
             {
                 //drawLine(lastFingerPos,fingerPos);
-                line_t line(lastFingerPos,fingerPos,curentRecordTime + recordTimer.elapsed());
-                line_list.append(line);
+                line_t line(lastFingerPos,fingerPos,curentRecordTime_ + recordTimer_.elapsed());
+                lineList_.append(line);
             }
             lastFingerPos = fingerPos;
             break;

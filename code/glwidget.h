@@ -7,7 +7,7 @@
 #include <QMutex>
 
 #include "leapmotion/LeapListener.h"
-
+#include "camera.h"
 #include "glview.h"
 #include "tracking_defines.h"
 
@@ -62,9 +62,8 @@ private:
     bool recording_;
     bool playing_;
 
+    Cam cam_;
 
-    //head positions in cm relative to screen center.
-    head_t head_;
     Leap::Vector palmPos_;
     Leap::Vector lastFingerPos;
     QList<line_t> lineList_;

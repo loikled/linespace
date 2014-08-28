@@ -3,7 +3,6 @@
 #include <math.h>
 #include <GL/glu.h>
 #include <iostream>
-
 #include <QMutexLocker>
 
 #include "leapmotion/HandEvent.h"
@@ -42,9 +41,7 @@ GlWidget::GlWidget(QWidget *parent) :
 {
     leapListener_.setReceiver(this);
     controller_.addListener(leapListener_);
-    head_.x = 0.0;
-    head_.y = 0.0;
-    head_.z = 5.0;
+
     palmPos_.x = 0.0f;
     palmPos_.y = 0.0f;
     palmPos_.z = 5.0f;
@@ -106,7 +103,9 @@ void GlWidget::paintGL()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     //place the camera like the real head and look at the center
-    gluLookAt(head_.x,head_.y,head_.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,0.0f);
+    Leap::Vector head = cam_.getPos();
+    Leap::Vector focus = cam_.getFocus();
+    gluLookAt(head.x,head.y,head.z, focus.x, focus.y, focus.z, 0.0f, 1.0f,0.0f);
     glClearColor(0,0,0,0);
     drawCube(CRATE, 0, 0, 0, 0.5);
     // Objects
@@ -370,25 +369,30 @@ void GlWidget::slotNewHead(head_t pPos)
     /*We inverse axes to compensate head position relative
      * to the cube.
      */
-    head_.x = -pPos.x;
+
+    Leap::Vector pos(pPos.x, pPos.y, pPos.z);
+    cam_.slotUpdateFromHeadPos(pos);
+    /*head_.x = -pPos.x;
     head_.y = -pPos.y;
-    head_.z =  pPos.z;
+    head_.z =  pPos.z;*/
 }
 
 //move slightly the camera, via keyboard commands for example
 void GlWidget::slotMoveHead(int pAxis, float pDelta)
 {
+    Leap::Vector offset;
     switch(pAxis)
     {
         case 0:
-            head_.x += pDelta;
+            offset.x += pDelta;
             break;
         case 1:
-            head_.y += pDelta;
+            offset.y += pDelta;
             break;
         case 2:
-            head_.z += pDelta;
+            offset.z += pDelta;
         default:
             break;
     }
+    cam_.slotTranslate(offset);
 }

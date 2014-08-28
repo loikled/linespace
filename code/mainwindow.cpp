@@ -168,22 +168,22 @@ void mainwindow::keyPressEvent(QKeyEvent *keyEvent)
             }
             break;
         case Qt::Key_Z:
-            glView_->slotMoveHead(1, 0.05);
+            glView_->slotMoveHead(1, 0.5);
             break;
         case Qt::Key_S:
-            glView_->slotMoveHead(1, -0.05);
+            glView_->slotMoveHead(1, -0.5);
             break;
         case Qt::Key_Q:
-            glView_->slotMoveHead(0, -0.05);
+            glView_->slotMoveHead(0, -0.5);
             break;
         case Qt::Key_D:
-            glView_->slotMoveHead(0, 0.05);
+            glView_->slotMoveHead(0, 0.5);
             break;
         case Qt::Key_A:
-            glView_->slotMoveHead(2, -0.05);
+            glView_->slotMoveHead(2, -0.5);
             break;
         case Qt::Key_E:
-            glView_->slotMoveHead(2, 0.05);
+            glView_->slotMoveHead(2, 0.5);
             break;
         case Qt::Key_H:
             webcamView_->isHidden()? webcamView_->show() : webcamView_->hide();

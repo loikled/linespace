@@ -30,10 +30,11 @@ LeapListener::LeapListener()
 void LeapListener::onInit(const Controller& controller)
 {
      qDebug() << "Initialized";
-     Config config = controller.config();
+     Q_UNUSED(controller);
+     /*Config config = controller.config();
      config.setFloat("Gesture.Circle.MinRadius", 30);
      config.setFloat("Gesture.Circle.MinArc", 2*PI);
-     config.save();
+     config.save(); */
 }
 
 void LeapListener::onConnect(const Controller& controller)

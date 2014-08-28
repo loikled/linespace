@@ -102,18 +102,22 @@ void GlWidget::paintGL()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
     //place the camera like the real head and look at the center
     Leap::Vector head = cam_.getPos();
     Leap::Vector focus = cam_.getFocus();
     gluLookAt(head.x,head.y,head.z, focus.x, focus.y, focus.z, 0.0f, 1.0f,0.0f);
     glClearColor(0,0,0,0);
+
+    //draw the grid to better show 3D scene
+    drawGrid();
+
     drawCube(CRATE, 0, 0, 0, 0.1);
     // Objects
     drawPalmPos();
     glLineWidth(5.5);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
-
 
     if(recording_ or playing_)
     {
@@ -151,16 +155,12 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 }
 
-
-
-
 // record functions
 
 void GlWidget::startRecord()
 {
     recording_ = true;
     recordTimer_.restart();
-
 }
 
 void GlWidget::stopRecord()
@@ -193,13 +193,26 @@ void GlWidget::drawLine(Leap::Vector firstPoint,Leap::Vector secondPoint)
     sprintf(first,"first pos x : %f",firstPoint.x);
     sprintf(second,"second pos x : %f",secondPoint.x);
 
-   // firstPoint /= 10;
-   // secondPoint /= 10;
     qDebug() << first << endl << second;
     glVertex3f(firstPoint.x, firstPoint.y, firstPoint.z);
     glVertex3f(secondPoint.x, secondPoint.y, secondPoint.z);
     glEnd();
 
+}
+
+void GlWidget::drawGrid(){
+    const Grid::GridList_t* list = grid_.getLineList();
+    glLineWidth(2.0);
+    glColor3f(0.0, 0.0, 1.0);
+    glBegin(GL_LINES);
+    for(auto& line: *list){
+
+        Leap::Vector first = line.first;
+        Leap::Vector second = line.second;
+        glVertex3f(first.x, first.y, first.z);
+        glVertex3f(second.x, second.y, second.z);
+    }
+    glEnd();
 }
 
 //Draw 6 squares and apply the texture on each: absolute coordinates for the center

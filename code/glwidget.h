@@ -8,6 +8,7 @@
 
 #include "leapmotion/LeapListener.h"
 #include "camera.h"
+#include "grid.h"
 #include "glview.h"
 #include "tracking_defines.h"
 
@@ -79,6 +80,7 @@ private:
     mutable QMutex mutexList_;
     GrabList_t grabList_;
     QList<Leap::Vector> lastPos_;
+    Grid grid_;
 
 public:
     GlWidget(QWidget *parent = 0);
@@ -111,6 +113,7 @@ public:
 private:
     void handleGrab();
     void customEvent(QEvent* pEvent);
+    void drawGrid();
 
 signals:
 

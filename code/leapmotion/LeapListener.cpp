@@ -61,82 +61,23 @@ void LeapListener::onFrame(const Controller& controller)
 {
     // Get the most recent frame and report some basic information
     const Frame frame = controller.frame();
-
+    Vector fingerpos;
     if (frame.hands().count() >= 1)
     {
         Hand hand = frame.hands().rightmost();
         rightHand_ = hand.id();
-        Vector pos = hand.palmPosition();
 
         if(hand.fingers().count() >= 1)
         {
-            fingerPos_ = hand.fingers().leftmost().tipPosition();
-        }
-        //closed hand hard to detect
-        // closed = select cube
-        float handOpening = 0;
-        if ( hand.fingers().isEmpty() )
-            handOpening = 0;
-        else
-            handOpening = hand.sphereRadius();
-
-        //small state machine to detect closed/opened hand
-        //use an hysteresis on hand sphere radius
-        static int countClose = 0;
-        static int countUp = 0;
-        static bool zoom = false;
-        //If hand is not near the same item, reset counters
-
-
-        if ( !trackPrevious_ )
-        {
-            countClose = 0;
-            countUp = 0;
-            trackPrevious_ = true;
+            fingerpos = hand.fingers().leftmost().tipPosition();
         }
 
         InteractionBox box = frame.interactionBox();
         if ( box.isValid() )
-            rPos_ = box.normalizePoint(pos, false);
-
-        selectionMode_ = HandEvent::SINGLE;
-        if (frame.hands().count() == 2)
-        {
-            Hand leftHand = frame.hands().leftmost();
-            float radius = leftHand.sphereRadius();
-            // If left hand is visible, select multiple items at a time
-            if ( radius >= RELEASE_TRESHOLD )
-                selectionMode_ = HandEvent::MULTIPLE;
-
-            //hand pitch controls zoom/scroll in the view
-            float pitch = leftHand.direction().pitch();
-            pitch = pitch*180/PI;
-            zoomFactor_ = 0;
-            if (pitch <= -ANGLE_ZOOM_TRESHOLD)
-            {
-                zoomFactor_ = ZOOM_FACTOR*(pitch + ANGLE_ZOOM_TRESHOLD);
-                zoom = true;
-            }
-            else if ( pitch >= ANGLE_ZOOM_TRESHOLD )
-            {
-                zoomFactor_ = ZOOM_FACTOR*(pitch - ANGLE_ZOOM_TRESHOLD);
-                zoom = true;
-            }
-        }
+            fingerPos_ = box.normalizePoint(fingerpos, false);
 
         //always send a move event
         moveEvent();
-        detectGesture(frame);
-        if ( zoom )
-        {
-            zoomEvent();
-            zoom = false;
-        }
-        if ( grabbing_ && handState_ == OPEN )
-        {
-            openEvent();
-            grabbing_ = false;
-        }
     }
 }
 
@@ -275,7 +216,7 @@ void LeapListener::moveEvent()
     if ( receiver_ )
     {
         HandEvent* event = 0;
-        event = new HandEvent(HandEvent::Moved, rPos_);
+        event = new HandEvent(HandEvent::Moved, fingerPos_);
         QApplication::postEvent(receiver_, event);
     }
 }
@@ -288,9 +229,4 @@ void LeapListener::circleEvent()
         event = new HandEvent(HandEvent::Circle, rPos_);
         QApplication::postEvent(receiver_, event);
     }
-}
-
-Leap::Vector LeapListener::getFingerPos()
-{
-    return fingerPos_;
 }

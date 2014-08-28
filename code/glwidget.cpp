@@ -126,11 +126,8 @@ void GlWidget::paintGL()
             continue;
         }
 
-        line.firstPoint_ /= 10;
-        line.secondPoint_ /= 10;
-
-        glVertex3f(line.firstPoint_.x, line.firstPoint_.y-4, line.firstPoint_.z);
-        glVertex3f(line.secondPoint_.x, line.secondPoint_.y-4, line.secondPoint_.z);
+        glVertex3f(line.firstPoint_.x, line.firstPoint_.y, line.firstPoint_.z);
+        glVertex3f(line.secondPoint_.x, line.secondPoint_.y, line.secondPoint_.z);
     }
     glEnd();
     if(maxRecordTimer_ < curentRecordTime_ + recordTimer_.elapsed())
@@ -342,14 +339,14 @@ void GlWidget::customEvent(QEvent* pEvent)
        case HandEvent::Moved:
 
             //convert normalize hand pos to our interaction box
-            palmPos_ = (event->pos()+Vector(-0.5f,-0.5f,-1.0f))*boxSize_*1.5f;
+            palmPos_ = (event->pos()+Vector(-0.5f,-0.5f,-1.0f));
 
             // Using finger pos
-            fingerPos = leapListener_.getFingerPos();
+            fingerPos = palmPos_;
             if(writing_ and recording_)
             {
                 //drawLine(lastFingerPos,fingerPos);
-                line_t line(lastFingerPos,fingerPos,curentRecordTime_ + recordTimer_.elapsed());
+                line_t line(lastFingerPos, fingerPos, curentRecordTime_ + recordTimer_.elapsed());
                 lineList_.append(line);
             }
             lastFingerPos = fingerPos;

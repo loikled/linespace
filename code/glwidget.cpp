@@ -107,7 +107,7 @@ void GlWidget::paintGL()
     Leap::Vector focus = cam_.getFocus();
     gluLookAt(head.x,head.y,head.z, focus.x, focus.y, focus.z, 0.0f, 1.0f,0.0f);
     glClearColor(0,0,0,0);
-    drawCube(CRATE, 0, 0, 0, 0.5);
+    drawCube(CRATE, 0, 0, 0, 0.1);
     // Objects
     drawPalmPos();
     glLineWidth(5.5);
@@ -395,4 +395,9 @@ void GlWidget::slotMoveHead(int pAxis, float pDelta)
             break;
     }
     cam_.slotTranslate(offset);
+}
+
+void GlWidget::slotChangeGains(Leap::Vector gains)
+{
+    cam_.slotChangeFactor(gains.x, gains.y, gains.z);
 }

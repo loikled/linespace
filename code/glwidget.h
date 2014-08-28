@@ -117,7 +117,7 @@ signals:
 public slots:
     void slotNewHead(head_t pPos);
     void slotMoveHead(int pAxis, float pDelta);
-
+    void slotChangeGains(Leap::Vector gains);
 private slots:
 };
 

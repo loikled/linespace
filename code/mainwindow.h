@@ -47,6 +47,7 @@ private slots:
    void slotGetNewFrame();
    void slotUpdateFrame(QPixmap pNewFrame);
    void slotAbout();
+   void slotCamSettings();
 
 };
 

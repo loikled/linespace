@@ -6,6 +6,8 @@
 #include <QMenu>
 #include <QDialog>
 
+#include "CamSettingsWidget.h"
+
 #define DELAY_FPS 50
 
 mainwindow::mainwindow(QWidget *parent) :
@@ -77,8 +79,10 @@ void mainwindow::init(void)
     QMenu* menu = menuBar()->addMenu("&Display");
     QAction* actionStart = new QAction("Start/Stop", this);
     QAction* actionHide = new QAction("Hide Webcam", this);
+    QAction* actionSettings = new QAction("Change gains", this);
     menu->addAction(actionStart);
     menu->addAction(actionHide);
+    menu->addAction(actionSettings);
 
     menu = menuBar()->addMenu("&Help");
     QAction* actionAbout = new QAction(QString("About ")+QCoreApplication::applicationName(),this);
@@ -86,6 +90,7 @@ void mainwindow::init(void)
 
     connect(actionStart, SIGNAL(triggered()), this, SLOT(slotStart()));
     connect(actionHide, SIGNAL(triggered()), webcamView_, SLOT(hide()));
+    connect(actionSettings, SIGNAL(triggered()), this, SLOT(slotCamSettings()));
 
     connect(actionAbout, SIGNAL(triggered()), this, SLOT(slotAbout()));
 
@@ -97,9 +102,6 @@ void mainwindow::init(void)
     setCentralWidget(centerWidget);
 
     connect(&tracker_, SIGNAL(signalNewHeadPos(head_t)), glView_, SLOT(slotNewHead(head_t)));
-
-
-
 }
 
 void mainwindow::slotSliderMoved(int value)
@@ -140,6 +142,7 @@ void mainwindow::slotGetNewFrame()
     }
 }
 
+#define CAMERA_STEP 0.1
 void mainwindow::keyPressEvent(QKeyEvent *keyEvent)
 {
     switch(keyEvent->key())
@@ -168,22 +171,22 @@ void mainwindow::keyPressEvent(QKeyEvent *keyEvent)
             }
             break;
         case Qt::Key_Z:
-            glView_->slotMoveHead(1, 0.5);
+            glView_->slotMoveHead(1, CAMERA_STEP);
             break;
         case Qt::Key_S:
-            glView_->slotMoveHead(1, -0.5);
+            glView_->slotMoveHead(1, -CAMERA_STEP);
             break;
         case Qt::Key_Q:
-            glView_->slotMoveHead(0, -0.5);
+            glView_->slotMoveHead(0, -CAMERA_STEP);
             break;
         case Qt::Key_D:
-            glView_->slotMoveHead(0, 0.5);
+            glView_->slotMoveHead(0, CAMERA_STEP);
             break;
         case Qt::Key_A:
-            glView_->slotMoveHead(2, -0.5);
+            glView_->slotMoveHead(2, -CAMERA_STEP);
             break;
         case Qt::Key_E:
-            glView_->slotMoveHead(2, 0.5);
+            glView_->slotMoveHead(2, CAMERA_STEP);
             break;
         case Qt::Key_H:
             webcamView_->isHidden()? webcamView_->show() : webcamView_->hide();
@@ -228,4 +231,11 @@ void mainwindow::slotAbout()
     about.setIcon(QMessageBox::Information);
     about.adjustSize();
     about.exec();
+}
+
+void mainwindow::slotCamSettings(){
+
+    CamSettingsWidget* settings = new CamSettingsWidget(this);
+    settings->show();
+    connect(settings, SIGNAL(signalChangeGains(Leap::Vector)), glView_, SLOT(slotChangeGains(Leap::Vector)));
 }

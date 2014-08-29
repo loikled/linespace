@@ -96,26 +96,38 @@ void GlWidget::paintGL()
     // ============================
     // clear the back buffer and z buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    glClearColor (1.0, 1.0, 1.0, 1.0);
     // disable lighting
     glDisable(GL_LIGHTING);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glEnable(GL_DEPTH_TEST);
 
+    glEnable (GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable (GL_LINE_SMOOTH);
+    glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+    glShadeModel (GL_FLAT);
+
+
     //place the camera like the real head and look at the center
     Leap::Vector head = cam_.getPos();
     Leap::Vector focus = cam_.getFocus();
-    gluLookAt(head.x,head.y,head.z, focus.x, focus.y, focus.z, 0.0f, 1.0f,0.0f);
+    gluLookAt(head.x, head.y, head.z, focus.x, focus.y, focus.z, 0.0f, 1.0f,0.0f);
+
 
     //draw the grid to better show 3D scene
+
     drawGrid();
-    glClearColor(0,0,0,0);
+
+    //glColor4f(1.0,1.0,1.0,0.5);
+    //drawCube(CRATE, 0.0, 0.0, 0.0, 0.1);
 
     // Objects
     drawPalmPos();
     glLineWidth(5.5);
-    glColor3f(1.0, 0.0, 0.0);
+    glColor4f(0.0, 1.0, 0.0, 8.0);
     glBegin(GL_LINES);
 
     if(recording_ or playing_)
@@ -202,12 +214,12 @@ void GlWidget::drawLine(Leap::Vector firstPoint,Leap::Vector secondPoint)
 void GlWidget::drawGrid(){
     const Grid::GridList_t* list = grid_.getLineList();
     glLineWidth(2.0);
-    glColor3f(0.0, 0.0, 1.0);
+    glColor4f(1.0, 0.0, 0.0, 0.5);
     glBegin(GL_LINES);
     for(auto& line: *list){
-
         Leap::Vector first = line.first;
         Leap::Vector second = line.second;
+
         glVertex3f(first.x, first.y, first.z);
         glVertex3f(second.x, second.y, second.z);
     }
@@ -357,7 +369,6 @@ void GlWidget::customEvent(QEvent* pEvent)
             fingerPos = palmPos_;
             if(writing_ and recording_)
             {
-                //drawLine(lastFingerPos,fingerPos);
                 line_t line(lastFingerPos, fingerPos, curentRecordTime_ + recordTimer_.elapsed());
                 lineList_.append(line);
             }

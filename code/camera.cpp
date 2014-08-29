@@ -2,7 +2,7 @@
 #include "math.h"
 
 Cam::Cam()
-    :pos_(Leap::Vector(0.0, 0.0, 1.0)),
+    :pos_(Leap::Vector(0.0, 0.0, 1.5)),
      angleFactor_(Leap::Vector(1.0, 1.0, 1.0)),
      focus_(Leap::Vector(0, 0, 0)),
      zoom_(1.0f)

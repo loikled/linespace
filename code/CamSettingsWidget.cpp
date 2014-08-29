@@ -37,14 +37,14 @@ void CamSettingsWidget::initGui(){
     setWindowFlags(Qt::Tool);
     connect(btnOK_, SIGNAL(clicked()), this, SLOT(close()));
 
-    sliderPhi_->setMinimum(-500);
-    sliderPhi_->setMaximum(+500);
+    sliderPhi_->setMinimum(10);
+    sliderPhi_->setMaximum(300);
     sliderPhi_->setValue(100);
-    sliderTheta_->setMinimum(-500);
-    sliderTheta_->setMaximum(+500);
+    sliderTheta_->setMinimum(10);
+    sliderTheta_->setMaximum(300);
     sliderTheta_->setValue(100);
-    sliderR_->setMinimum(-500);
-    sliderR_->setMaximum(+500);
+    sliderR_->setMinimum(10);
+    sliderR_->setMaximum(1000);
     sliderR_->setValue(100);
 
     connect(sliderTheta_, SIGNAL(sliderMoved(int)), this, SLOT(slotTheta(int)));

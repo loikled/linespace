@@ -36,7 +36,7 @@ void Cam::slotChangeFactor(float theta, float phy, float r){
 //headposition is in theta,phy,r format
 void Cam::slotUpdateFromHeadPos(const Leap::Vector& HeadPos)
 {
-    pos_.x = sin(HeadPos.x)*angleFactor_.x + focus_.x;
+    pos_.x = -(sin(HeadPos.x)*angleFactor_.x + focus_.x);
     pos_.y = cos(HeadPos.y)*angleFactor_.y + focus_.y;
     pos_.z = HeadPos.z - focus_.z*angleFactor_.z;
 }

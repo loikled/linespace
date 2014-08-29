@@ -37,7 +37,10 @@ SOURCES += main.cpp \
     glview.cpp \
     glwidget.cpp \
     leapmotion/LeapListener.cpp \
-    leapmotion/HandEvent.cpp
+    leapmotion/HandEvent.cpp \
+    camera.cpp \
+    CamSettingsWidget.cpp \
+    grid.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -47,4 +50,7 @@ HEADERS += \
     tracking_defines.h \
     leapmotion/Leap.h \
     leapmotion/LeapListener.h \
-    leapmotion/HandEvent.h
+    leapmotion/HandEvent.h \
+    camera.h \
+    CamSettingsWidget.h \
+    grid.h

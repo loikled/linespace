@@ -5,6 +5,8 @@
 #include <math.h>
 #include <QDebug>
 
+#include <set>
+
 #include "opencv2/video/tracking.hpp"
 #define WEBCAM_WINDOW "webcam"
 
@@ -67,7 +69,7 @@ void Facetrack::init(void)
     capture_ = cvCaptureFromCAM(0);
 
     // try to open 2 different cams, else fail.
-    // 0 = embedded cam like in laptops,
+    // 0 = embedded cam like in laptops or usb cam if its the only one
     // 1 = usb cam
     if ( !capture_ )
     {
@@ -141,6 +143,18 @@ void Facetrack::getNewImg(void)
     }
 }
 
+float Facetrack::distanceToCluster(cv::Point2f testPoint, std::vector< cv::Point2f>& cluster){
+    int minDistance = 10000;
+    for(auto& point: cluster){
+        if (point == testPoint)
+            continue;
+        int distance = abs(testPoint.x - point.x) + abs(testPoint.y - point.y);
+        if (distance < minDistance)
+            minDistance = distance;
+    }
+    return minDistance;
+}
+
 //remove bad features that are too far from the cluster
 //base on the mean squared error and standard deviation
 void Facetrack::remove_bad_features(float pStandardDeviationTreshold){
@@ -205,7 +219,44 @@ void Facetrack::rescaleFeatures(Rect face_region)
 }
 
 void Facetrack::addFeatures(Mat& img){
-    Mat roi = Mat(img.rows, img.cols, img.depth());
+    int w = track_box_.width*expand_roi_;
+    int h = track_box_.height*expand_roi_;
+    cv::Rect roiBox(track_box_.x, track_box_.y, w, h);
+
+    Mat roi = img(roiBox).clone();
+    std::vector< cv::Point2f > corners;
+
+    goodFeaturesToTrack(roi,
+                        corners,
+                        maxCorners_,
+                        qualityLevel_,
+                        minDistance_,
+                        goodFeaturesMask_,
+                        blockSize_,
+                        useHarrisDetector_,
+                        k_ );
+    for (auto& corner: corners){
+        int distance = distanceToCluster(corner, corners_);
+        if (distance < addFeatureDistance_){
+            corners_.push_back(corner);
+        }
+    }
+
+    //eliminate doubles
+
+    struct ltPoint
+    {
+      bool operator()(const cv::Point2f &T1, const cv::Point2f &T2) const
+      {
+        return(T1.x < T2.x);
+      }
+    };
+
+    std::set<cv::Point2f, ltPoint> features(corners_.begin(), corners_.end());
+    corners_.clear();
+    for(auto point : features){
+        corners_.push_back(point);
+    }
 }
 
 void Facetrack::detectHead(void)
@@ -233,7 +284,7 @@ void Facetrack::detectHead(void)
 
     Mat crop = gray(detect_box_).clone();
     //take coordinates of first face found
-    if( firstFeatures_){
+    if( firstFeatures_ || last_corners_.size() == 0){
 
         goodFeaturesToTrack(crop,
                             last_corners_,
@@ -258,10 +309,16 @@ void Facetrack::detectHead(void)
                              status,
                              err);
         corners_.clear();
-
+        float total_error = 0;
         for(size_t i = 0; i < status.size(); ++i){
-            if (status[i])
+            total_error += err[i];
+            if (status[i]){
                 corners_.push_back(all_corners[i]);
+            }
+        }
+        total_error/=err.size();
+        if (total_error > 2.0f){
+            findHead_ = true;
         }
 
         remove_bad_features(2.5f);

@@ -99,20 +99,19 @@ void GlWidget::paintGL()
 
     // disable lighting
     glDisable(GL_LIGHTING);
-
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    glEnable(GL_DEPTH_TEST);
 
     //place the camera like the real head and look at the center
     Leap::Vector head = cam_.getPos();
     Leap::Vector focus = cam_.getFocus();
     gluLookAt(head.x,head.y,head.z, focus.x, focus.y, focus.z, 0.0f, 1.0f,0.0f);
-    glClearColor(0,0,0,0);
 
     //draw the grid to better show 3D scene
     drawGrid();
+    glClearColor(0,0,0,0);
 
-    drawCube(CRATE, 0, 0, 0, 0.1);
     // Objects
     drawPalmPos();
     glLineWidth(5.5);

@@ -149,6 +149,7 @@ void GlWidget::paintGL()
     {
         maxRecordTimer_ = curentRecordTime_ + recordTimer_.elapsed();
     }
+    emit setTimeAndTotalTime(curentRecordTime_,maxRecordTimer_);
 }
 
 //helper function, loads a texture and assign it to an enum value

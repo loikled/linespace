@@ -65,8 +65,9 @@ void mainwindow::init(void)
     button->setMaximumWidth(80);
     button2->setMaximumWidth(80);
     button3->setMaximumWidth(80);
-    QLineEdit* textBlock = new QLineEdit("todo display recording timer");
+    textBlock = new QLineEdit("todo display recording timer");
     textBlock->setMaximumWidth(80);
+    connect(glView_,SIGNAL(setTimeAndTotalTime(int,int)),this,SLOT(slotSetTimings(int,int)));
 
     QVBoxLayout* buttonLayout = new QVBoxLayout();
     buttonLayout->addWidget(button);
@@ -130,6 +131,20 @@ void mainwindow::slotStart()
     else
         timer_->start(DELAY_FPS);
 }
+void mainwindow::slotSetTimings(int currentTime, int totalTime)
+{
+    //to modifie
+    slider_->cursor().pos().setX(currentTime*totalTime/1000);
+
+    QTime* timerCurrentTime = new QTime();
+    timerCurrentTime->setHMS(currentTime/3600/1000,currentTime/60/1000,currentTime/1000,currentTime);
+    QTime* timerTotalTime = new QTime();
+    timerTotalTime->addMSecs(totalTime);
+    textBlock->insert(timerCurrentTime->toString() + " / " + timerTotalTime->toString());
+
+}
+
+
 
 void mainwindow::slotGetNewFrame()
 {

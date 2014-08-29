@@ -116,6 +116,7 @@ private:
     void drawGrid();
 
 signals:
+    void setTimeAndTotalTime(int currentTime, int totalTime);
 
 public slots:
     void slotNewHead(head_t pPos);

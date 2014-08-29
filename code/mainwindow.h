@@ -24,6 +24,7 @@ private:
     QTimer* timer_;
     GlWidget* glView_;
     QSlider* slider_;
+    QLineEdit* textBlock;
 
 public:
     mainwindow(QWidget *parent = 0);
@@ -42,6 +43,7 @@ public slots:
     void slotStop();
     void slotPlay();
     void slotSliderMoved(int value);
+    void slotSetTimings(int currentTime, int totalTime);
 
 private slots:
    void slotGetNewFrame();

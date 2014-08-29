@@ -21,6 +21,7 @@ private:
     Leap::Vector right_;
     bool fill_;
     GridList_t grid_;
+    float depth_;
 
 public:
     explicit Grid(QObject *parent = 0);

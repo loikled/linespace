@@ -7,7 +7,8 @@ Grid::Grid(QObject *parent) :
     unit_(defaultUnit),
     left_(Leap::Vector(-1.0,-1.0,0.5)),
     right_(Leap::Vector(1.0, -1.0, 0.5)),
-    fill_(false)
+    fill_(false),
+    depth_(2.5)
 {
     computeLines();
 }
@@ -24,7 +25,7 @@ void Grid::computeLines(){
     if (!fill_){
         float total = right_.distanceTo(left_);
         //back XY plane
-        DrawPlaneXY(left_.z - total);
+        DrawPlaneXY(left_.z - depth_);
         //floor plane
         DrawPlaneXZ(left_.y);
         //ceiling plane
@@ -63,11 +64,11 @@ void Grid::DrawPlaneXZ(float y){
     for(float x = left_.x; x < right_.x; x += unit_){
         GridLine_t line;
         line.first = Leap::Vector(x, y, left_.z);
-        line.second = Leap::Vector(x, y, left_.z - total);
+        line.second = Leap::Vector(x, y, left_.z - depth_);
         grid_.push_back(line);
     }
     //horizontal lines from near to far
-    for(float z = left_.z; z > left_.z - total; z -= unit_){
+    for(float z = left_.z; z > left_.z - depth_; z -= unit_){
         GridLine_t line;
         line.first = Leap::Vector(left_.x, y, z);
         line.second = Leap::Vector(left_.x + total, y, z);
@@ -82,11 +83,11 @@ void Grid::DrawPlaneYZ(float x){
     for(float y = left_.y; y < left_.y + total; y += unit_){
         GridLine_t line;
         line.first = Leap::Vector(x, y, left_.z);
-        line.second = Leap::Vector(x, y, left_.z - total); //reverted axis
+        line.second = Leap::Vector(x, y, left_.z - depth_); //reverted axis
         grid_.push_back(line);
     }
     //vertical lines from near to far
-    for(float z = left_.z; z > left_.z - total; z -= unit_){
+    for(float z = left_.z; z > left_.z - depth_; z -= unit_){
         GridLine_t line;
         line.first = Leap::Vector(x, left_.y , z);
         line.second = Leap::Vector(x,left_.y + total, z);

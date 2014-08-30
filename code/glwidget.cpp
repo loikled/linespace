@@ -46,7 +46,7 @@ GlWidget::GlWidget(QWidget *parent) :
     palmPos_.y = 0.0f;
     palmPos_.z = 5.0f;
 
-    setCursor(Qt::BlankCursor);
+    //setCursor(Qt::BlankCursor);
     lineList_.clear();
 }
 
@@ -68,10 +68,12 @@ void GlWidget::initializeGL()
 
     glEnable(GL_TEXTURE_2D);
 
-    glShadeModel(GL_SMOOTH);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClearDepth(1.0f);
+    glEnable(GL_LIGHTING); //enable lighting in the scene
+    glEnable(GL_LIGHT0); //turn on light 0
     glEnable(GL_DEPTH_TEST);
+    glShadeModel(GL_SMOOTH);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+    glClearDepth(1.0f);
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_MULTISAMPLE);
@@ -94,62 +96,31 @@ void GlWidget::paintGL()
     // ============================
     // Render Scene
     // ============================
-    // clear the back buffer and z buffer
+
+    // clear the color buffer(background in white) and z buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor (1.0, 1.0, 1.0, 1.0);
-    // disable lighting
-    glDisable(GL_LIGHTING);
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glEnable(GL_DEPTH_TEST);
 
     glEnable (GL_BLEND);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable (GL_LINE_SMOOTH);
     glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-    glShadeModel (GL_FLAT);
-
-
     //place the camera like the real head and look at the center
     Leap::Vector head = cam_.getPos();
     Leap::Vector focus = cam_.getFocus();
+
     gluLookAt(head.x, head.y, head.z, focus.x, focus.y, focus.z, 0.0f, 1.0f,0.0f);
 
-
     //draw the grid to better show 3D scene
-
     drawGrid();
 
-    //glColor4f(1.0,1.0,1.0,0.5);
-    //drawCube(CRATE, 0.0, 0.0, 0.0, 0.1);
-
     // Objects
-    drawPalmPos();
-    glLineWidth(5.5);
-    glColor4f(0.0, 1.0, 0.0, 8.0);
-    glBegin(GL_LINES);
-
-    if(recording_ or playing_)
-    {
-        curentRecordTime_ += recordTimer_.elapsed();
-    }
-
-    foreach (line_t line, lineList_) {
-        if(line.timePainted_> curentRecordTime_)
-        {
-            continue;
-        }
-
-        glVertex3f(line.firstPoint_.x, line.firstPoint_.y, line.firstPoint_.z);
-        glVertex3f(line.secondPoint_.x, line.secondPoint_.y, line.secondPoint_.z);
-    }
-    glEnd();
-    if(maxRecordTimer_ < curentRecordTime_ + recordTimer_.elapsed())
-    {
-        maxRecordTimer_ = curentRecordTime_ + recordTimer_.elapsed();
-    }
-    emit setTimeAndTotalTime(curentRecordTime_,maxRecordTimer_);
+    drawCursor();
+    drawCurve();
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -168,17 +139,18 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
 }
 
 // record functions
-
 void GlWidget::startRecord()
 {
     recording_ = true;
     recordTimer_.restart();
+    cursor_.slotChangeState(Cursor::DRAW);
 }
 
 void GlWidget::stopRecord()
 {
     recording_ = false;
     playing_ = false;
+    cursor_.slotChangeState(Cursor::IDLE);
 }
 
 void GlWidget::play()
@@ -192,39 +164,48 @@ void GlWidget::setNewTime(int time)
     recordTimer_.restart();
 }
 
-
-//Draw line
-
-void GlWidget::drawLine(Leap::Vector firstPoint,Leap::Vector secondPoint)
-{
+void GlWidget::drawCurve(){
+    if(recording_ or playing_)
+    {
+        curentRecordTime_ += recordTimer_.elapsed();
+    }
+    glDisable(GL_LIGHTING);
     glLineWidth(5.5);
-    glColor3f(1.0, 0.0, 0.0);
+    glColor4f(0.0, 1.0, 0.0, 1.0);
     glBegin(GL_LINES);
-    char first[30];
-    char second[30];
-    sprintf(first,"first pos x : %f",firstPoint.x);
-    sprintf(second,"second pos x : %f",secondPoint.x);
-
-    qDebug() << first << endl << second;
-    glVertex3f(firstPoint.x, firstPoint.y, firstPoint.z);
-    glVertex3f(secondPoint.x, secondPoint.y, secondPoint.z);
+    foreach (line_t line, lineList_) {
+        if(line.timePainted_> curentRecordTime_)
+        {
+            continue;
+        }
+        glNormal3f(0,0,1);
+        glVertex3f(line.firstPoint_.x, line.firstPoint_.y, line.firstPoint_.z);
+        glVertex3f(line.secondPoint_.x, line.secondPoint_.y, line.secondPoint_.z);
+    }
     glEnd();
-
+    glEnable(GL_LIGHTING);
+    if(maxRecordTimer_ < curentRecordTime_ + recordTimer_.elapsed())
+    {
+        maxRecordTimer_ = curentRecordTime_ + recordTimer_.elapsed();
+    }
+    emit setTimeAndTotalTime(curentRecordTime_,maxRecordTimer_);
 }
 
 void GlWidget::drawGrid(){
     const Grid::GridList_t* list = grid_.getLineList();
+    glDisable(GL_LIGHTING);
     glLineWidth(2.0);
     glColor4f(1.0, 0.0, 0.0, 0.5);
     glBegin(GL_LINES);
     for(auto& line: *list){
         Leap::Vector first = line.first;
         Leap::Vector second = line.second;
-
+        glNormal3f(0,0,1);
         glVertex3f(first.x, first.y, first.z);
         glVertex3f(second.x, second.y, second.z);
     }
     glEnd();
+    glEnable(GL_LIGHTING);
 }
 
 //Draw 6 squares and apply the texture on each: absolute coordinates for the center
@@ -235,12 +216,15 @@ void GlWidget::drawCube(texId_t PtextureId, float pCenterX, float pCenterY,float
 
     glBegin(GL_QUADS);
     // front fixed Z near (positive)
+
+    glNormal3f(0,0,1);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(pCenterX-half, pCenterY-half, pCenterZ-half);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(pCenterX+half, pCenterY-half, pCenterZ-half);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(pCenterX+half, pCenterY+half, pCenterZ-half);
     glTexCoord2f(0.0f, 1.0f); glVertex3f(pCenterX-half, pCenterY+half, pCenterZ-half);
 
     // back fixed z far (negative)
+    glNormal3f(0,0,1);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(pCenterX-half, pCenterY-half, pCenterZ+half);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(pCenterX-half, pCenterY+half, pCenterZ+half);
     glTexCoord2f(0.0f, 1.0f); glVertex3f(pCenterX+half, pCenterY+half, pCenterZ+half);
@@ -282,14 +266,21 @@ void GlWidget::drawCube(const item_t& pCube)
              pCube.size_ + pCube.sizeOffset_);
 }
 
-//draw a cube where the middle of the palm is
-void GlWidget::drawPalmPos()
-{
-    //normalize leap coordinates to our box size
-   drawCube(METAL,
-            palmPos_.x ,
-            palmPos_.y,
-            palmPos_.z, BOX_SIZE/(4*gridSize_));
+void GlWidget::drawCursor(){
+    glDisable(GL_LIGHTING);
+    GLUquadric* quad = gluNewQuadric();
+    gluQuadricOrientation(quad, GLU_OUTSIDE);
+    const GLfloat* color = cursor_.getColorFromState();
+    glColor4fv(color);
+    Leap::Vector pos = cursor_.getPos();
+    float size = cursor_.getSize();
+    //glusphere draws always at 0,0 so we change the model draw space
+    glPushMatrix();
+    glTranslatef(pos.x, pos.y, pos.z);
+    gluSphere(quad, size , 100, 100);
+    glPopMatrix();
+    gluDeleteQuadric(quad);
+    glEnable(GL_LIGHTING);
 }
 
 /*
@@ -364,10 +355,8 @@ void GlWidget::customEvent(QEvent* pEvent)
        case HandEvent::Moved:
 
             //convert normalize hand pos to our interaction box
-            palmPos_ = (event->pos()+Vector(-0.5f,-0.5f,-1.0f));
-
-            // Using finger pos
-            fingerPos = palmPos_;
+            fingerPos = (event->pos()+Vector(-0.5f,-0.5f,-1.0f));
+            cursor_.slotMove(fingerPos);
             if(writing_ and recording_)
             {
                 line_t line(lastFingerPos, fingerPos, curentRecordTime_ + recordTimer_.elapsed());

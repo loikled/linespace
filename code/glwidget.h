@@ -11,6 +11,7 @@
 #include "grid.h"
 #include "glview.h"
 #include "tracking_defines.h"
+#include "cursor.h"
 
 #define NB_TEXTURE 2
 #define BOX_SIZE 8.0f //the grid is always inside the box
@@ -64,6 +65,7 @@ private:
     bool playing_;
 
     Cam cam_;
+    Cursor cursor_;
 
     Leap::Vector palmPos_;
     Leap::Vector lastFingerPos;
@@ -108,12 +110,13 @@ public:
                   float pCenterZ,
                   float pSize);
     void drawCube(const item_t& pCube);
-    void drawPalmPos();
 
 private:
     void handleGrab();
     void customEvent(QEvent* pEvent);
     void drawGrid();
+    void drawCurve();
+    void drawCursor();
 
 signals:
     void setTimeAndTotalTime(int currentTime, int totalTime);

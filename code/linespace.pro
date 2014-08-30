@@ -40,7 +40,8 @@ SOURCES += main.cpp \
     leapmotion/HandEvent.cpp \
     camera.cpp \
     CamSettingsWidget.cpp \
-    grid.cpp
+    grid.cpp \
+    cursor.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -53,4 +54,5 @@ HEADERS += \
     leapmotion/HandEvent.h \
     camera.h \
     CamSettingsWidget.h \
-    grid.h
+    grid.h \
+    cursor.h

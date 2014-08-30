@@ -36,7 +36,7 @@ public:
     static const QEvent::Type Circle = static_cast<QEvent::Type>(EVENT_CIRCLE);
 
 private:
-    Leap::Vector pos_; // palm position
+    Leap::Vector pos_; // index tip position
     int itemSelected_;
     Selection_t selection_;
     float zoomOffset_;

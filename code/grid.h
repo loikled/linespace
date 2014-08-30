@@ -32,6 +32,7 @@ public:
     void DrawPlaneXY(float z);
     void DrawPlaneXZ(float y);
     void DrawPlaneYZ(float x);
+    const Grid::GridList_t getMarkers(const Leap::Vector& cursor) const;
     const GridList_t* getLineList() const;
 
 signals:

@@ -280,6 +280,19 @@ void GlWidget::drawCursor(){
     gluSphere(quad, size , 100, 100);
     glPopMatrix();
     gluDeleteQuadric(quad);
+
+    Grid::GridList_t markers = grid_.getMarkers(pos);
+    glLineWidth(2.0);
+    glColor4f(1.0, 1.0, 1.0, 0.5);
+    glBegin(GL_LINES);
+    for(auto& line: markers){
+        Leap::Vector first = line.first;
+        Leap::Vector second = line.second;
+        glVertex3f(first.x, first.y, first.z);
+        glVertex3f(second.x, second.y, second.z);
+    }
+    glEnd();
+
     glEnable(GL_LIGHTING);
 }
 

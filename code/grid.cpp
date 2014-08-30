@@ -114,3 +114,29 @@ void Grid::enableFill(bool fill){
     fill_ = fill;
     computeLines();//need to recompute
 }
+
+const Grid::GridList_t Grid::getMarkers(const Leap::Vector& cursor) const{
+    GridList_t markers;
+
+    float size = right_.distanceTo(left_);
+    GridLine_t X,Y,Z;
+    X.first = Leap::Vector(cursor);
+    X.second = Leap::Vector(cursor);
+    X.first.x = left_.x;
+    X.second.x = right_.x;
+
+    Y.first = Leap::Vector(cursor);
+    Y.second = Leap::Vector(cursor);
+    Y.first.y = left_.y;
+    Y.second.y = left_.y + size;
+
+    Z.first = Leap::Vector(cursor);
+    Z.second = Leap::Vector(cursor);
+    Z.first.z = left_.z;
+    Z.second.z = left_.z -size*depth_;
+
+    markers.push_back(X);
+    markers.push_back(Y);
+    markers.push_back(Z);
+    return markers;
+}

@@ -32,6 +32,7 @@ public:
     void init(void);
     void mainLoop(void);
     void keyPressEvent( QKeyEvent *keyEvent);
+    QTime* setTimeFromInt(int intTime);
 
 signals:
     void signalNewFrame(QPixmap pNewFrame);

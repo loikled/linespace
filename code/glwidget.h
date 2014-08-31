@@ -61,6 +61,7 @@ private:
     QTime recordTimer_;
     int maxRecordTimer_;
     int curentRecordTime_;
+    int lastElapsedTime_;
     bool recording_;
     bool playing_;
 

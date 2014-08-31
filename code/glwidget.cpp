@@ -61,6 +61,7 @@ void GlWidget::initializeGL()
     loadTexture("../code/ressources/metal.jpg", METAL);
     writing_ = false;
     recordTimer_.restart();
+    lastElapsedTime_ = recordTimer_.elapsed();
 
     // Just display the drawing even without any drawing yet
     line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.0,0.0,0.0),0);
@@ -141,8 +142,10 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
 // record functions
 void GlWidget::startRecord()
 {
+    playing_ = false;
     recording_ = true;
     recordTimer_.restart();
+    lastElapsedTime_ = recordTimer_.elapsed();
     cursor_.slotChangeState(Cursor::DRAW);
 }
 
@@ -155,25 +158,32 @@ void GlWidget::stopRecord()
 
 void GlWidget::play()
 {
+    recording_ = false;
     playing_ = true;
+    curentRecordTime_ = 0;
+    recordTimer_.restart();
+    lastElapsedTime_ = recordTimer_.elapsed();
 }
 
 void GlWidget::setNewTime(int time)
 {
     curentRecordTime_ = (time*maxRecordTimer_)/1000;
     recordTimer_.restart();
+    lastElapsedTime_ = recordTimer_.elapsed();
 }
 
 void GlWidget::drawCurve(){
-    if(recording_ or playing_)
+    if(recording_ or (playing_ && (curentRecordTime_+ recordTimer_.elapsed() - lastElapsedTime_) < maxRecordTimer_))
     {
-        curentRecordTime_ += recordTimer_.elapsed();
+        curentRecordTime_ += (recordTimer_.elapsed() - lastElapsedTime_);
+        lastElapsedTime_ = recordTimer_.elapsed();
     }
     glDisable(GL_LIGHTING);
     glLineWidth(5.5);
     glColor4f(0.0, 1.0, 0.0, 1.0);
     glBegin(GL_LINES);
     foreach (line_t line, lineList_) {
+
         if(line.timePainted_> curentRecordTime_)
         {
             continue;
@@ -184,11 +194,12 @@ void GlWidget::drawCurve(){
     }
     glEnd();
     glEnable(GL_LIGHTING);
-    if(maxRecordTimer_ < curentRecordTime_ + recordTimer_.elapsed())
+    if(maxRecordTimer_ < curentRecordTime_)
     {
-        maxRecordTimer_ = curentRecordTime_ + recordTimer_.elapsed();
+        maxRecordTimer_ = curentRecordTime_;
     }
     emit setTimeAndTotalTime(curentRecordTime_,maxRecordTimer_);
+
 }
 
 void GlWidget::drawGrid(){
@@ -375,9 +386,9 @@ void GlWidget::customEvent(QEvent* pEvent)
             //convert normalize hand pos to our interaction box
             fingerPos = (event->pos()+Vector(-0.5f,-0.5f,-1.0f));
             cursor_.slotMove(fingerPos);
-            if(writing_ and recording_)
+            if(recording_)
             {
-                line_t line(lastFingerPos, fingerPos, curentRecordTime_ + recordTimer_.elapsed());
+                line_t line(lastFingerPos, fingerPos, curentRecordTime_);
                 lineList_.append(line);
             }
             lastFingerPos = fingerPos;

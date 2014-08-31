@@ -49,10 +49,18 @@ void mainwindow::init(void)
     // to increase slider precision
     slider_->setMaximum(1000);
     connect(slider_, SIGNAL(sliderMoved(int)), this, SLOT(slotSliderMoved(int)));
-    connect(slider_, SIGNAL(sliderReleased()), this, SLOT(slotRecord()));
     slider_->setOrientation(Qt::Horizontal);
+
+    textBlock = new QLineEdit();
+    textBlock->setMaximumWidth(200);
+
+    QHBoxLayout* hSliderLayout = new QHBoxLayout();
+
+    hSliderLayout->addWidget(slider_);
+    hSliderLayout->addWidget(textBlock);
+
     vlayout->addWidget(glView_);
-    vlayout->addWidget(slider_);
+    vlayout->addItem(hSliderLayout);
     hLayout->addItem(vlayout);
 
     // Record and play drawing
@@ -65,15 +73,14 @@ void mainwindow::init(void)
     button->setMaximumWidth(80);
     button2->setMaximumWidth(80);
     button3->setMaximumWidth(80);
-    textBlock = new QLineEdit("todo display recording timer");
-    textBlock->setMaximumWidth(80);
+
+
     connect(glView_,SIGNAL(setTimeAndTotalTime(int,int)),this,SLOT(slotSetTimings(int,int)));
 
     QVBoxLayout* buttonLayout = new QVBoxLayout();
     buttonLayout->addWidget(button);
     buttonLayout->addWidget(button2);
     buttonLayout->addWidget(button3);
-    buttonLayout->addWidget(textBlock);
 
     hLayout->addItem(buttonLayout);
 
@@ -134,16 +141,48 @@ void mainwindow::slotStart()
 void mainwindow::slotSetTimings(int currentTime, int totalTime)
 {
     //to modifie
-    slider_->cursor().pos().setX(currentTime*totalTime/1000);
-
-    QTime* timerCurrentTime = new QTime();
-    timerCurrentTime->setHMS(currentTime/3600/1000,currentTime/60/1000,currentTime/1000,currentTime);
-    QTime* timerTotalTime = new QTime();
-    timerTotalTime->addMSecs(totalTime);
-    textBlock->insert(timerCurrentTime->toString() + " / " + timerTotalTime->toString());
+    if(totalTime != 0)
+    {
+        slider_->setSliderPosition(currentTime*1000/totalTime);
+    }
+    textBlock->clear();
+    textBlock->insert(setTimeFromInt(currentTime)->toString("hh:mm:ss:zzz") + " / " + setTimeFromInt(totalTime)->toString("hh:mm:ss:zzz"));
 
 }
 
+QTime* mainwindow::setTimeFromInt(int intTime)
+{
+    QTime* time = new QTime();
+    int hour = 0;
+    int min = 0;
+    int sec = 0;
+    int msec = 0;
+    while(true){
+        if(intTime > 3600*1000)
+        {
+            hour += 1;
+            intTime -= 3600*1000;
+        }
+        else if(intTime > 60*1000)
+        {
+            min += 1;
+            intTime -= 60*1000;
+        }
+        else if(intTime > 1000)
+        {
+            sec += 1;
+            intTime -= 1000;
+        }
+        else
+        {
+            msec = intTime;
+            break;
+        }
+
+    }
+    time->setHMS(hour,min,sec,msec);
+    return time;
+}
 
 
 void mainwindow::slotGetNewFrame()

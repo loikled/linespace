@@ -133,7 +133,7 @@ const Grid::GridList_t Grid::getMarkers(const Leap::Vector& cursor) const{
     Z.first = Leap::Vector(cursor);
     Z.second = Leap::Vector(cursor);
     Z.first.z = left_.z;
-    Z.second.z = left_.z -size*depth_;
+    Z.second.z = left_.z - depth_;
 
     markers.push_back(X);
     markers.push_back(Y);

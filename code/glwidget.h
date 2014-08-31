@@ -110,6 +110,7 @@ public:
                   float pCenterZ,
                   float pSize);
     void drawCube(const item_t& pCube);
+    void clearCurves();
 
 private:
     void handleGrab();

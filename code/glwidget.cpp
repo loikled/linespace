@@ -296,6 +296,10 @@ void GlWidget::drawCursor(){
     glEnable(GL_LIGHTING);
 }
 
+void GlWidget::clearCurves(){
+    lineList_.clear();
+}
+
 /*
 //find the closest cube from the palm center
 int GlWidget::closestItem(float pTreshold)
@@ -362,7 +366,8 @@ void GlWidget::customEvent(QEvent* pEvent)
                 zoomOffset_ = 0;
             break;
         case HandEvent::Swiped:
-            break;
+                clearCurves();
+                break;
         case HandEvent::Grabbed:
             break;
        case HandEvent::Moved:

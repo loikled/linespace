@@ -75,6 +75,7 @@ void LeapListener::onFrame(const Controller& controller)
         {
             writting_ = false;
         }
+        fingerpos = hand.fingers().rightmost().tipPosition();
         InteractionBox box = frame.interactionBox();
         if ( box.isValid() )
             fingerPos_ = box.normalizePoint(fingerpos, false);

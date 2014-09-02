@@ -245,6 +245,7 @@ void mainwindow::keyPressEvent(QKeyEvent *keyEvent)
             break;
         case Qt::Key_H:
             webcamView_->isHidden()? webcamView_->show() : webcamView_->hide();
+            this->setFocus();
             break;
         case Qt::Key_W :
             if(glView_->writing_)

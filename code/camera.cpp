@@ -2,7 +2,7 @@
 #include "math.h"
 
 Cam::Cam()
-    :pos_(Leap::Vector(0.0, 0.0, 1.5)),
+    :pos_(Leap::Vector(0.0, 0.0, 1.0)),
      angleFactor_(Leap::Vector(1.0, 1.0, 1.0)),
      focus_(Leap::Vector(0, 0, 0)),
      zoom_(1.0f)
@@ -27,8 +27,8 @@ void Cam::slotTranslate(const Leap::Vector& offset){
     pos_+= offset;
 }
 
-void Cam::slotChangeFactor(float theta, float phy, float r){
-    angleFactor_ = Leap::Vector(theta,phy,r);
+void Cam::slotChangeFactor(const Leap::Vector& gains){
+    angleFactor_ = gains;
 }
 
 //convert head coordinates from desk space in front of screen to
@@ -36,7 +36,8 @@ void Cam::slotChangeFactor(float theta, float phy, float r){
 //headposition is in theta,phy,r format
 void Cam::slotUpdateFromHeadPos(const Leap::Vector& HeadPos)
 {
-    pos_.x = -(sin(HeadPos.x)*angleFactor_.x + focus_.x);
-    pos_.y = cos(HeadPos.y)*angleFactor_.y + focus_.y;
-    pos_.z = HeadPos.z - focus_.z*angleFactor_.z;
+    pos_.z = HeadPos.z*angleFactor_.z - focus_.z;
+    float depth = abs(pos_.z - focus_.z);
+    pos_.x = -tan(HeadPos.x * angleFactor_.x)*depth + focus_.x;
+    pos_.y = -tan(HeadPos.y * angleFactor_.y)*depth + focus_.y;
 }

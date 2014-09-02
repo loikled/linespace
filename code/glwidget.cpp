@@ -411,9 +411,6 @@ void GlWidget::slotNewHead(head_t pPos)
 
     Leap::Vector pos(pPos.x, pPos.y, pPos.z);
     cam_.slotUpdateFromHeadPos(pos);
-    /*head_.x = -pPos.x;
-    head_.y = -pPos.y;
-    head_.z =  pPos.z;*/
 }
 
 //move slightly the camera, via keyboard commands for example
@@ -438,5 +435,5 @@ void GlWidget::slotMoveHead(int pAxis, float pDelta)
 
 void GlWidget::slotChangeGains(Leap::Vector gains)
 {
-    cam_.slotChangeFactor(gains.x, gains.y, gains.z);
+    cam_.slotChangeFactor(gains);
 }

@@ -5,10 +5,10 @@ const float Grid::defaultUnit = 0.05f;
 Grid::Grid(QObject *parent) :
     QObject(parent),
     unit_(defaultUnit),
-    left_(Leap::Vector(-1.0,-1.0,0.5)),
-    right_(Leap::Vector(1.0, -1.0, 0.5)),
+    left_(Leap::Vector(-1.0, -1.0, 2)),
+    right_(Leap::Vector(1.0, -1.0, 2)),
     fill_(false),
-    depth_(2.5)
+    depth_(5)
 {
     computeLines();
 }

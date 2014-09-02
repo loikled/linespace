@@ -114,7 +114,7 @@ void LeapListener::detectGesture(const Frame& pFrame)
                 SwipeGesture swipe = SwipeGesture(gest);
                 // direction almost vertical
                 float angle = swipe.direction().angleTo(Vector(-1,0,0))*180.0f/PI;
-                if (angle <= 20.0f)
+                if (angle <= 30.0f)
                 {
                     swipeEvent();
                     swipeTimer_->start();

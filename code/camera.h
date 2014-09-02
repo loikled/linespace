@@ -21,7 +21,7 @@ class Cam : public QObject{
     public slots:
         void slotUpdateFromHeadPos(const Leap::Vector& HeadPos);
         void slotTranslate(const Leap::Vector& offset);
-        void slotChangeFactor(float theta, float phy, float r);
+        void slotChangeFactor(const Leap::Vector& gains);
 };
 
 #endif // CAMERA_H

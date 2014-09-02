@@ -389,25 +389,25 @@ void Facetrack::WTLeeTrackPosition (void)
     //get the size of the head in degrees (relative to the field of view)
     float dx = (float)currentFace_.boundingRect().width;
     float dy = (float)currentFace_.boundingRect().height;
-    float pointDist = (float)sqrt(dx * dx + dy * dy);
+    float pointDist = (float)dx; //take average of both
     float angle = radPerPix * pointDist / 2.0;
 
     /* Set the head distance in units of screen size
-     * creates more or less zoom
+     * creates more or less zoom, use only lateral dimension for computing depth
      */
-    head_.z = (float)(DEPTH_ADJUST + scale_*((AVG_HEAD_MM / 2) / std::tan(angle)) / (float)SCREENHEIGHT);
+    head_.z = (float)((AVG_HEAD_MM / 2) / std::tan(angle) / ((float)SCREENWIDTH));
 
     //average distance = center of the head
     float aX = currentFace_.center.x;
     float aY = currentFace_.center.y;
 
     // angle between head center and center of screen horizontally
-    head_.x = (float)radPerPix * (aX - camW2);
+    head_.x = radPerPix * (aX - camW2);
     head_.y = (aY - camH2) * radPerPix;
 
     // we suppose in general webcam is above the screen like in most laptops
-    if (CAMERA_ABOVE)
-        head_.y = head_.y + radPerPix*camH2;
+    //if (CAMERA_ABOVE)
+        //head_.y = head_.y - radPerPix*camH2;// add and offset in angle to compensate
 
     emit signalNewHeadPos(head_);
 }

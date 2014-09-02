@@ -35,7 +35,7 @@ private:
     // finger which draw on the right hand
     Leap::Vector fingerPos_;
     //Active or not writting
-    bool writting_;
+    bool writing_;
 
     HandEvent::Selection_t  selectionMode_;
     QObject* receiver_;

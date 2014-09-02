@@ -221,7 +221,7 @@ void Facetrack::addFeatures(Mat& img){
                         k_ );
 
     for (auto& corner: corners){
-        int distance = distanceToCluster(corner, corners_);
+        uint distance = distanceToCluster(corner, corners_);
         if (distance > addFeatureDistance_){
             corners_.push_back(corner);
         }
@@ -333,7 +333,7 @@ void Facetrack::detectHead(void)
                              status,
                              err);
         corners_.clear();
-        for(int i = 0; i < status.size(); i++){
+        for(uint i = 0; i < status.size(); i++){
             if (status[i])
                 corners_.push_back(all_corners[i]);
         }
@@ -388,7 +388,7 @@ void Facetrack::WTLeeTrackPosition (void)
 
     //get the size of the head in degrees (relative to the field of view)
     float dx = (float)currentFace_.boundingRect().width;
-    float dy = (float)currentFace_.boundingRect().height;
+    //float dy = (float)currentFace_.boundingRect().height;
     float pointDist = (float)dx; //take average of both
     float angle = radPerPix * pointDist / 2.0;
 

@@ -19,6 +19,16 @@ Vector HandEvent::pos()
     return pos_;
 }
 
+bool HandEvent::writting()
+{
+    return writting_;
+}
+
+void HandEvent::writting(bool isWritting)
+{
+    writting_ = isWritting;
+}
+
 int HandEvent::item()
 {
     return itemSelected_;

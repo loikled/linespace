@@ -66,9 +66,9 @@ void LeapListener::onFrame(const Controller& controller)
     {
         Hand hand = frame.hands().rightmost();
         rightHand_ = hand.id();
-        if(hand.fingers().count() == 2 && hand.fingers().leftmost().direction().angleTo(hand.fingers().rightmost().direction())*180.0f/PI > 35.0f)
+        fingerpos = hand.fingers().rightmost().tipPosition();
+        if(hand.fingers().count() == 2 && hand.fingers().leftmost().direction().angleTo(hand.fingers().rightmost().direction())*180.0f/PI > 40.0f)
         {
-            fingerpos = hand.fingers().rightmost().tipPosition();
             writting_ = true;
         }
         else
@@ -226,7 +226,8 @@ void LeapListener::moveEvent()
     if ( receiver_ )
     {
         HandEvent* event = 0;
-        event = new HandEvent(HandEvent::Moved, fingerPos_,writting_);
+        event = new HandEvent(HandEvent::Moved, fingerPos_);
+        event->writting(writting_);
         QApplication::postEvent(receiver_, event);
     }
 }

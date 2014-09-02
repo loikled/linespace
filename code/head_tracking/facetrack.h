@@ -105,10 +105,11 @@ public:
     void WTLeeTrackPosition ();
     QImage putImage(const Mat& mat);
     bool isNewFace(void);
+    cv::Rect getFace(const Mat& img);
     cv::RotatedRect faceFromPoints(void);
     void remove_bad_features(float pStandardDeviationTreshold);
     void addFeatures(Mat& img);
-
+    bool isRectNonZero(Rect r);
 private:
     float distanceToCluster(cv::Point2f testPoint, std::vector< cv::Point2f>& cluster);
 

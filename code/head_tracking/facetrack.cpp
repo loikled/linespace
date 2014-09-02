@@ -239,31 +239,54 @@ void Facetrack::addFeatures(Mat& img){
     }
 }
 
-void Facetrack::detectHead(void)
-{
-    Mat gray;
-    cvtColor( frameCpy_, gray, CV_BGR2GRAY );
+bool Facetrack::isRectNonZero(Rect r){
+    bool ok = true;
+    ok = ok && (r.width != 0);
+    ok = ok && (r.height != 0);
+    return ok;
+}
+
+//return bounding box of biggest face found in gray img
+cv::Rect Facetrack::getFace(const Mat& img){
     vector<Rect> faces;
     newFaceFound_ = false;
     /*We use the haarcascade classifier
      * only take the first (biggest) face found
      */
-    equalizeHist(gray,gray);
-    if (findHead_){
-        cascade_.detectMultiScale( gray, faces,
+    cascade_.detectMultiScale(img, faces,
                1.1, 2, 0
                |CV_HAAR_FIND_BIGGEST_OBJECT
                |CV_HAAR_DO_ROUGH_SEARCH,
                Size(10, 10));
-        if (faces.size() > 0){
+
+    Rect res;
+    if (faces.size() > 0){
+        res = faces[0];
+    }
+    return res;
+}
+
+void Facetrack::detectHead(void)
+{
+    newFaceFound_ = false;
+    Mat gray;
+    cvtColor( frameCpy_, gray, CV_BGR2GRAY );
+    equalizeHist(gray,gray);
+
+    //first find the head with haar classifier
+    if (findHead_){
+        Rect faceBB = getFace(gray);
+        if (isRectNonZero(faceBB)){
             findHead_ = false;
             firstFeatures_ = true;
-            detect_box_ = faces[0];
+            detect_box_ = faceBB;
+        }else{
+            return;
         }
     }
 
     Mat crop = gray(detect_box_).clone();
-    //take coordinates of first face found
+    //initialise tracking by finding features in the face region
     if( firstFeatures_ || last_corners_.size() == 0){
 
         goodFeaturesToTrack(crop,
@@ -279,44 +302,48 @@ void Facetrack::detectHead(void)
         firstFeatures_ = false;
         track_box_ = detect_box_;
     }
-        next_img = crop;
-        vector<uchar> status;
-        vector<float> err;
-        vector<cv::Point2f> all_corners;
-        calcOpticalFlowPyrLK(previous_img,
-                             next_img,
-                             last_corners_,
-                             all_corners,
-                             status,
-                             err);
-        corners_.clear();
-        corners_ = all_corners;
-        remove_bad_features(2.5f);
+    //if we have features to track
+    next_img = crop;
+    vector<uchar> status;
+    vector<float> err;
+    vector<cv::Point2f> all_corners;
+    calcOpticalFlowPyrLK(previous_img,
+                         next_img,
+                         last_corners_,
+                         all_corners,
+                         status,
+                         err);
+    corners_.clear();
+    for(int i = 0; i < status.size(); i++){
+        if (status[i])
+            corners_.push_back(all_corners[i]);
+    }
+    //remove_bad_features(2.5f);
 
-        min_features_ = (int)((float)corners_.size()*0.9);
-        if (corners_.size() < min_features_){
-            expand_roi_ = expand_roi_ini_ * expand_roi_;
-            addFeatures(next_img);
-        }else{
-            expand_roi_ = expand_roi_ini_;
-        }
+    min_features_ = (int)((float)corners_.size()*0.9);
+    if (corners_.size() < min_features_){
+        expand_roi_ = expand_roi_ini_ * expand_roi_;
+        addFeatures(next_img);
+    }else{
+        expand_roi_ = expand_roi_ini_;
+    }
 
-        last_corners_ = corners_;
+    last_corners_ = corners_;
 
-        float succes = 0;
-        for (auto& s : status){
-            if ( s )
-                succes++;
-        }
-        succes = succes*100/status.size();
-        if (succes < 50)
-            findHead_ = true;
+    float succes = 0;
+    for (auto& s : status){
+        if ( s )
+            succes++;
+    }
+    succes = succes*100/status.size();
+    if (succes < 50)
+        findHead_ = true;
 
-        rescaleFeatures(detect_box_);
-        currentFace_ = faceFromPoints();
-        next_img.copyTo(previous_img);
-        newFaceFound_ = true;
-        WTLeeTrackPosition();
+    rescaleFeatures(detect_box_);
+    currentFace_ = faceFromPoints();
+    next_img.copyTo(previous_img);
+    newFaceFound_ = true;
+    WTLeeTrackPosition();
  }
 
 /* Convert the rectangle found in 2D to 3D pos in unit box

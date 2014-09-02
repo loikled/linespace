@@ -64,7 +64,7 @@ private:
     const int maxCorners_ = 100;
     const double qualityLevel_ = 0.01;
     const double minDistance_ = 10.0;
-    const int addFeatureDistance_ = 10;
+    const int addFeatureDistance_ = 20;
      // mask – The optional region of interest. If the image is not empty (then it
      // needs to have the type CV_8UC1 and the same size as image ), it will specify
      // the region in which the corners are detected

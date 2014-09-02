@@ -317,6 +317,8 @@ void Facetrack::detectHead(void)
                             k_ );
         previous_img = gray.clone();
         firstFeatures_ = false;
+        min_features_ = (int)((float)last_corners_.size()*0.9);
+        absoluteMinFeatures_ = min_features_/2;
     }
     //if we have features to track
     if (isRectNonZero(track_box_) && last_corners_.size() > 0){
@@ -343,25 +345,24 @@ void Facetrack::detectHead(void)
             }
         }
 
-        //min_features_ = (int)((float)corners_.size()*0.9);
-       /* if (corners_.size() < min_features_){
+
+       if (corners_.size() < min_features_){
             expand_roi_ = expand_roi_ini_ * expand_roi_;
             addFeatures(next_img);
         }else{
             expand_roi_ = expand_roi_ini_;
-        }*/
-
+        }
         last_corners_ = corners_;
 
-        float succes = 0;
+        /*float succes = 0;
         for (auto& s : status){
             if ( s )
                 succes++;
         }
-        //succes = succes*100/status.size();
-        //if (succes < 50)
-          //  findHead_ = true;
-
+        succes = succes*100/status.size();
+        if (succes < 50)
+            findHead_ = true;
+    */
         currentFace_ = faceFromPoints();
         next_img.copyTo(previous_img);
         newFaceFound_ = true;

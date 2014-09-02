@@ -166,7 +166,9 @@ void Facetrack::remove_bad_features(float pStandardDeviationTreshold){
 
 //fit the face ellipse from the feature points
 cv::RotatedRect Facetrack::faceFromPoints(void){
-    cv::RotatedRect face = fitEllipse(corners_);
+    cv::RotatedRect face;
+    if (corners_.size() > 6)
+        face = fitEllipse(corners_);
     track_box_ = face.boundingRect();
     return face;
 }
@@ -183,9 +185,13 @@ void Facetrack::rescaleFeatures(Rect face_region)
 }
 
 void Facetrack::addFeatures(Mat& img){
-    int w = track_box_.width*expand_roi_;
-    int h = track_box_.height*expand_roi_;
-    if (w == 0 || h == 0){
+    uint cols = img.cols;
+    uint rows = img.rows;
+    uint w = (int)track_box_.width*expand_roi_;
+    uint h = (int)track_box_.height*expand_roi_;
+    w = min(w, cols);
+    h = min(h, rows);
+    if ((w == 0) || (h == 0)){
         return;
     }
     cv::Rect roiBox(track_box_.x, track_box_.y, w, h);
@@ -247,7 +253,6 @@ void Facetrack::detectHead(void)
             findHead_ = false;
             firstFeatures_ = true;
             detect_box_ = faces[0];
-            expand_roi_ = expand_roi_ini_;
         }
     }
 
@@ -285,6 +290,8 @@ void Facetrack::detectHead(void)
         if (corners_.size() < min_features_){
             expand_roi_ = expand_roi_ini_ * expand_roi_;
             addFeatures(next_img);
+        }else{
+            expand_roi_ = expand_roi_ini_;
         }
 
         last_corners_ = corners_;

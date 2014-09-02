@@ -8,7 +8,6 @@
 #include <set>
 
 #include "opencv2/video/tracking.hpp"
-#include "opencv2/highgui/highgui.hpp"
 #define WEBCAM_WINDOW "webcam"
 
 using namespace std;
@@ -203,16 +202,14 @@ void Facetrack::addFeatures(Mat& img){
     }
     Mat mask = Mat(img.size(), CV_8UC1, 0.0);
     cv::Point2f center;
-    center.x = (track_box_.x + track_box_.width)/2;
-    center.y = (track_box_.y + track_box_.height)/2;
+    center.x = track_box_.x + track_box_.width/2;
+    center.y = track_box_.y + track_box_.height/2;
     Size2f s;
     s.width = track_box_.width*expand_roi_;
     s.height = track_box_.height*expand_roi_;
     RotatedRect box(center, s, 0);
     ellipse(mask, box, Scalar(1.0,1.0,1.0), CV_FILLED);
-
     std::vector< cv::Point2f > corners;
-
     goodFeaturesToTrack(img,
                         corners,
                         maxCorners_,
@@ -293,7 +290,7 @@ void Facetrack::detectHead(void)
         }
     }
 
-    Mat crop = gray(detect_box_).clone();
+    //Mat crop = gray(detect_box_).clone();
     //initialise tracking by finding features in the face region
     if( firstFeatures_ || last_corners_.size() == 0){
 
@@ -302,14 +299,13 @@ void Facetrack::detectHead(void)
         }
         Mat mask(gray.size(), CV_8UC1, 0.0);
         cv::Point2f center;
-        center.x = (track_box_.x + track_box_.width)/2;
-        center.y = (track_box_.y + track_box_.height)/2;
+        center.x = track_box_.x + track_box_.width/2;
+        center.y = track_box_.y + track_box_.height/2;
         Size2f s;
         s.width = track_box_.width;
         s.height = track_box_.height;
         RotatedRect box(center, s, 0);
         ellipse(mask, box, Scalar(255,255,255), CV_FILLED);
-        imshow("mask", mask);
         goodFeaturesToTrack(gray,
                             last_corners_,
                             maxCorners_,
@@ -348,12 +344,12 @@ void Facetrack::detectHead(void)
         }
 
         //min_features_ = (int)((float)corners_.size()*0.9);
-        if (corners_.size() < min_features_){
+       /* if (corners_.size() < min_features_){
             expand_roi_ = expand_roi_ini_ * expand_roi_;
             addFeatures(next_img);
         }else{
             expand_roi_ = expand_roi_ini_;
-        }
+        }*/
 
         last_corners_ = corners_;
 
@@ -366,7 +362,6 @@ void Facetrack::detectHead(void)
         //if (succes < 50)
           //  findHead_ = true;
 
-        //rescaleFeatures(detect_box_);
         currentFace_ = faceFromPoints();
         next_img.copyTo(previous_img);
         newFaceFound_ = true;

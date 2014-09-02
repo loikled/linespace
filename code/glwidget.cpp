@@ -386,7 +386,7 @@ void GlWidget::customEvent(QEvent* pEvent)
             //convert normalize hand pos to our interaction box
             fingerPos = (event->pos()+Vector(-0.5f,-0.5f,-1.0f));
             cursor_.slotMove(fingerPos);
-            if(recording_)
+            if(event->writting())
             {
                 line_t line(lastFingerPos, fingerPos, curentRecordTime_);
                 lineList_.append(line);

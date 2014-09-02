@@ -373,10 +373,9 @@ void Facetrack::detectHead(void)
  }
 
 /* Convert the rectangle found in 2D to 3D pos in unit box
+ * position is given as phi theta and depth values
+ * phi and theta in rads, depth in arbitrary unit
  */
-// Track head position with Johnny Chung Lee's trig stuff
-// XXX: Note that positions should be float values from 0-1024
-//      and 0-720 (width, height, respectively).
 void Facetrack::WTLeeTrackPosition (void)
 {
     /*Find nb of rad/pixel from webcam resolution
@@ -390,7 +389,6 @@ void Facetrack::WTLeeTrackPosition (void)
     //get the size of the head in degrees (relative to the field of view)
     float dx = (float)currentFace_.boundingRect().width;
     float dy = (float)currentFace_.boundingRect().height;
-
     float pointDist = (float)sqrt(dx * dx + dy * dy);
     float angle = radPerPix * pointDist / 2.0;
 
@@ -403,16 +401,13 @@ void Facetrack::WTLeeTrackPosition (void)
     float aX = currentFace_.center.x;
     float aY = currentFace_.center.y;
 
-    // Set the head position horizontally
-    head_.x = scale_*((float)sin(radPerPix * (aX - camW2)) * head_.z);
-    float relAng = (aY - camH2) * radPerPix;
-
-    // Set the head height
-    head_.y = scale_*(-0.5f + (float)sin((float)VERTICAL_ANGLE/ 100.0 + relAng) * head_.z);
+    // angle between head center and center of screen horizontally
+    head_.x = (float)radPerPix * (aX - camW2);
+    head_.y = (aY - camH2) * radPerPix;
 
     // we suppose in general webcam is above the screen like in most laptops
     if (CAMERA_ABOVE)
-        head_.y = head_.y + 0.5f + (float)sin(relAng)*head_.z;
+        head_.y = head_.y + radPerPix*camH2;
 
     emit signalNewHeadPos(head_);
 }

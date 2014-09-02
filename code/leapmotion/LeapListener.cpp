@@ -66,12 +66,15 @@ void LeapListener::onFrame(const Controller& controller)
     {
         Hand hand = frame.hands().rightmost();
         rightHand_ = hand.id();
-
-        if(hand.fingers().count() >= 1)
+        if(hand.fingers().count() == 2 && hand.fingers().leftmost().direction().angleTo(hand.fingers().rightmost().direction())*180.0f/PI > 35.0f)
         {
-            fingerpos = hand.fingers().leftmost().tipPosition();
+            fingerpos = hand.fingers().rightmost().tipPosition();
+            writting_ = true;
         }
-
+        else
+        {
+            writting_ = false;
+        }
         InteractionBox box = frame.interactionBox();
         if ( box.isValid() )
             fingerPos_ = box.normalizePoint(fingerpos, false);
@@ -79,6 +82,12 @@ void LeapListener::onFrame(const Controller& controller)
         //always send a move event
         moveEvent();
     }
+    else
+    {
+        writting_ = false;
+    }
+
+
 }
 
 void LeapListener::detectGesture(const Frame& pFrame)
@@ -216,7 +225,7 @@ void LeapListener::moveEvent()
     if ( receiver_ )
     {
         HandEvent* event = 0;
-        event = new HandEvent(HandEvent::Moved, fingerPos_);
+        event = new HandEvent(HandEvent::Moved, fingerPos_,writting_);
         QApplication::postEvent(receiver_, event);
     }
 }

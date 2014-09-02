@@ -32,8 +32,10 @@ private:
     //right hand palm position
     Leap::Vector rPos_;
 
-    // most left finger on the right hand
+    // finger which draw on the right hand
     Leap::Vector fingerPos_;
+    //Active or not writting
+    bool writting_;
 
     HandEvent::Selection_t  selectionMode_;
     QObject* receiver_;

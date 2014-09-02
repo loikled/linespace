@@ -68,13 +68,13 @@ void LeapListener::onFrame(const Controller& controller)
         rightHand_ = hand.id();
         if(hand.fingers().count() == 2 && hand.fingers().leftmost().direction().angleTo(hand.fingers().rightmost().direction())*180.0f/PI > 35.0f)
         {
-            fingerpos = hand.fingers().rightmost().tipPosition();
             writting_ = true;
         }
         else
         {
             writting_ = false;
         }
+        fingerpos = hand.fingers().rightmost().tipPosition();
         InteractionBox box = frame.interactionBox();
         if ( box.isValid() )
             fingerPos_ = box.normalizePoint(fingerpos, false);

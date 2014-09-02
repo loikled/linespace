@@ -222,7 +222,7 @@ void Facetrack::addFeatures(Mat& img){
 
     for (auto& corner: corners){
         int distance = distanceToCluster(corner, corners_);
-        if (distance < addFeatureDistance_){
+        if (distance > addFeatureDistance_){
             corners_.push_back(corner);
         }
     }

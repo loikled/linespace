@@ -61,10 +61,10 @@ private:
 
     //GoodfeaturesToTack parameters
     std::vector< cv::Point2f > corners_, last_corners_;
-    const int maxCorners_ = 100;
+    const int maxCorners_ = 200;
     const double qualityLevel_ = 0.01;
     const double minDistance_ = 10.0;
-    const int addFeatureDistance_ = 20;
+    const int addFeatureDistance_ = 10;
      // mask – The optional region of interest. If the image is not empty (then it
      // needs to have the type CV_8UC1 and the same size as image ), it will specify
      // the region in which the corners are detected

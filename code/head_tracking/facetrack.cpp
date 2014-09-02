@@ -340,6 +340,7 @@ void Facetrack::detectHead(void)
 
         rescaleFeatures(detect_box_);
         currentFace_ = coord_t(faceFromPoints());
+        next_img.copyTo(previous_img);
         newFaceFound_ = true;
         WTLeeTrackPosition();
  }

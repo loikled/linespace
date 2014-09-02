@@ -78,6 +78,7 @@ void LeapListener::onFrame(const Controller& controller)
 
         //always send a move event
         moveEvent();
+        detectGesture(frame);
     }
 }
 
@@ -102,7 +103,7 @@ void LeapListener::detectGesture(const Frame& pFrame)
             {
                 SwipeGesture swipe = SwipeGesture(gest);
                 // direction almost vertical
-                float angle = swipe.direction().angleTo(Vector(0,1,0))*180.0f/PI;
+                float angle = swipe.direction().angleTo(Vector(-1,0,0))*180.0f/PI;
                 if (angle <= 20.0f)
                 {
                     swipeEvent();

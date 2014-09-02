@@ -80,11 +80,15 @@ private:
      // k – Free parameter of Harris detector
      const double k_ = 0.04;
 
+     const float outlierTreshold_ = 2.5f;
+
      bool findHead_;
      bool firstFeatures_;
      cv::Mat previous_img, next_img;
      Rect detect_box_, track_box_;
-    int min_features_ = 30;
+    int min_features_ = 50;
+    int absoluteMinFeatures_ = 25;
+
     float expand_roi_ = 1.02;
     const float expand_roi_ini_ = 1.02;
 
@@ -107,7 +111,7 @@ public:
     bool isNewFace(void);
     cv::Rect getFace(const Mat& img);
     cv::RotatedRect faceFromPoints(void);
-    void remove_bad_features(float pStandardDeviationTreshold);
+    int remove_bad_features(float pStandardDeviationTreshold = 10000);
     void addFeatures(Mat& img);
     bool isRectNonZero(Rect r);
 private:

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "opencv2/video/tracking.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #define WEBCAM_WINDOW "webcam"
 
 using namespace std;
@@ -141,7 +142,9 @@ float Facetrack::distanceToCluster(cv::Point2f testPoint, std::vector< cv::Point
 
 //remove bad features that are too far from the cluster
 //base on the mean squared error and standard deviation
-void Facetrack::remove_bad_features(float pStandardDeviationTreshold){
+int Facetrack::remove_bad_features(float pStandardDeviationTreshold){
+    int score = 0;
+
     Point2f avg(0,0);
     for (auto& f: corners_){
         avg += f;
@@ -155,13 +158,23 @@ void Facetrack::remove_bad_features(float pStandardDeviationTreshold){
     }
     mse = se / corners_.size();
 
+    //mean error must be > 0 and not too much to make sense
+    if (mse == 0 || mse > pStandardDeviationTreshold)
+        return -1;
+
     for (size_t i = 0; i < corners_.size(); ++i){
         Point2d f = corners_[i];
         float std_err = ((f.x-avg.x)*(f.x-avg.x) + (f.y-avg.y)*(f.y-avg.y))/mse;
-        if(std_err > pStandardDeviationTreshold){
+        if(std_err > outlierTreshold_){
             corners_.erase(corners_.begin()+i); //should use a list for efficient deletion
         }
     }
+    if (corners_.size() < absoluteMinFeatures_)
+        score = -1;
+    else{
+        score = 1;
+    }
+    return score;
 }
 
 //fit the face ellipse from the feature points
@@ -185,36 +198,31 @@ void Facetrack::rescaleFeatures(Rect face_region)
 }
 
 void Facetrack::addFeatures(Mat& img){
-    uint cols = img.cols;
-    uint rows = img.rows;
-    uint w = (int)track_box_.width*expand_roi_;
-    uint h = (int)track_box_.height*expand_roi_;
-    w = min(w, cols);
-    h = min(h, rows);
-    if ((w == 0) || (h == 0)){
+    if (!isRectNonZero(track_box_)){
         return;
     }
-    cv::Rect roiBox(track_box_.x, track_box_.y, w, h);
-
-    Mat roi;
-    try{
-        roi = img(roiBox).clone();
-    }
-    catch(cv::Exception e){
-        roi = img.clone();
-    }
+    Mat mask = Mat(img.size(), CV_8UC1, 0.0);
+    cv::Point2f center;
+    center.x = (track_box_.x + track_box_.width)/2;
+    center.y = (track_box_.y + track_box_.height)/2;
+    Size2f s;
+    s.width = track_box_.width*expand_roi_;
+    s.height = track_box_.height*expand_roi_;
+    RotatedRect box(center, s, 0);
+    ellipse(mask, box, Scalar(1.0,1.0,1.0), CV_FILLED);
 
     std::vector< cv::Point2f > corners;
 
-    goodFeaturesToTrack(roi,
+    goodFeaturesToTrack(img,
                         corners,
                         maxCorners_,
                         qualityLevel_,
                         minDistance_,
-                        goodFeaturesMask_,
+                        mask,
                         blockSize_,
                         useHarrisDetector_,
                         k_ );
+
     for (auto& corner: corners){
         int distance = distanceToCluster(corner, corners_);
         if (distance < addFeatureDistance_){
@@ -223,7 +231,6 @@ void Facetrack::addFeatures(Mat& img){
     }
 
     //eliminate doubles
-
     struct ltPoint
     {
       bool operator()(const cv::Point2f &T1, const cv::Point2f &T2) const
@@ -280,6 +287,7 @@ void Facetrack::detectHead(void)
             findHead_ = false;
             firstFeatures_ = true;
             detect_box_ = faceBB;
+            track_box_ = Rect();
         }else{
             return;
         }
@@ -289,61 +297,83 @@ void Facetrack::detectHead(void)
     //initialise tracking by finding features in the face region
     if( firstFeatures_ || last_corners_.size() == 0){
 
-        goodFeaturesToTrack(crop,
+        if (!isRectNonZero(track_box_)){
+            track_box_ = detect_box_;
+        }
+        Mat mask(gray.size(), CV_8UC1, 0.0);
+        cv::Point2f center;
+        center.x = (track_box_.x + track_box_.width)/2;
+        center.y = (track_box_.y + track_box_.height)/2;
+        Size2f s;
+        s.width = track_box_.width;
+        s.height = track_box_.height;
+        RotatedRect box(center, s, 0);
+        ellipse(mask, box, Scalar(255,255,255), CV_FILLED);
+        imshow("mask", mask);
+        goodFeaturesToTrack(gray,
                             last_corners_,
                             maxCorners_,
                             qualityLevel_,
                             minDistance_,
-                            goodFeaturesMask_,
+                            mask,
                             blockSize_,
                             useHarrisDetector_,
                             k_ );
-        previous_img = crop;
+        previous_img = gray.clone();
         firstFeatures_ = false;
-        track_box_ = detect_box_;
     }
     //if we have features to track
-    next_img = crop;
-    vector<uchar> status;
-    vector<float> err;
-    vector<cv::Point2f> all_corners;
-    calcOpticalFlowPyrLK(previous_img,
-                         next_img,
-                         last_corners_,
-                         all_corners,
-                         status,
-                         err);
-    corners_.clear();
-    for(int i = 0; i < status.size(); i++){
-        if (status[i])
-            corners_.push_back(all_corners[i]);
-    }
-    //remove_bad_features(2.5f);
+    if (isRectNonZero(track_box_) && last_corners_.size() > 0){
+        next_img = gray;
+        vector<uchar> status;
+        vector<float> err;
+        vector<cv::Point2f> all_corners;
+        calcOpticalFlowPyrLK(previous_img,
+                             next_img,
+                             last_corners_,
+                             all_corners,
+                             status,
+                             err);
+        corners_.clear();
+        for(int i = 0; i < status.size(); i++){
+            if (status[i])
+                corners_.push_back(all_corners[i]);
+        }
+        if (corners_.size() > 0){
+            int score = remove_bad_features();
+            if (score == -1){
+                findHead_ = true;
+                return;
+            }
+        }
 
-    min_features_ = (int)((float)corners_.size()*0.9);
-    if (corners_.size() < min_features_){
-        expand_roi_ = expand_roi_ini_ * expand_roi_;
-        addFeatures(next_img);
+        //min_features_ = (int)((float)corners_.size()*0.9);
+        if (corners_.size() < min_features_){
+            expand_roi_ = expand_roi_ini_ * expand_roi_;
+            addFeatures(next_img);
+        }else{
+            expand_roi_ = expand_roi_ini_;
+        }
+
+        last_corners_ = corners_;
+
+        float succes = 0;
+        for (auto& s : status){
+            if ( s )
+                succes++;
+        }
+        //succes = succes*100/status.size();
+        //if (succes < 50)
+          //  findHead_ = true;
+
+        //rescaleFeatures(detect_box_);
+        currentFace_ = faceFromPoints();
+        next_img.copyTo(previous_img);
+        newFaceFound_ = true;
+        WTLeeTrackPosition();
     }else{
-        expand_roi_ = expand_roi_ini_;
+        firstFeatures_ = true;
     }
-
-    last_corners_ = corners_;
-
-    float succes = 0;
-    for (auto& s : status){
-        if ( s )
-            succes++;
-    }
-    succes = succes*100/status.size();
-    if (succes < 50)
-        findHead_ = true;
-
-    rescaleFeatures(detect_box_);
-    currentFace_ = faceFromPoints();
-    next_img.copyTo(previous_img);
-    newFaceFound_ = true;
-    WTLeeTrackPosition();
  }
 
 /* Convert the rectangle found in 2D to 3D pos in unit box
@@ -364,8 +394,7 @@ void Facetrack::WTLeeTrackPosition (void)
     //get the size of the head in degrees (relative to the field of view)
     float dx = (float)currentFace_.boundingRect().width;
     float dy = (float)currentFace_.boundingRect().height;
-    //float dx = (float)(currentFace_.x1 - currentFace_.x2);
-    //float dy = (float)(currentFace_.y1 - currentFace_.y2);
+
     float pointDist = (float)sqrt(dx * dx + dy * dy);
     float angle = radPerPix * pointDist / 2.0;
 
@@ -377,8 +406,6 @@ void Facetrack::WTLeeTrackPosition (void)
     //average distance = center of the head
     float aX = currentFace_.center.x;
     float aY = currentFace_.center.y;
-    //float aX = (currentFace_.x1 + currentFace_.x2) / 2.0f;
-    //float aY = (currentFace_.y1 + currentFace_.y2) / 2.0f;
 
     // Set the head position horizontally
     head_.x = scale_*((float)sin(radPerPix * (aX - camW2)) * head_.z);

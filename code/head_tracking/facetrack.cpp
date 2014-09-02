@@ -47,7 +47,6 @@ const int Facetrack::weights_[NB_SAMPLE_FILTER]= {1,1,1,1,1,1,1,1,1,1};
 Facetrack::Facetrack(string pCascadeFile)
     :capture_(0),
       cascadePath_(pCascadeFile),
-      currentFace_(0,0,0,0),
       newFaceFound_(false),
       scale_(MOVE_SCALE),
       fov_(WEBCAM_FOV),
@@ -93,23 +92,8 @@ void Facetrack::showRaw(void)
 
 void Facetrack::drawFace(void)
 {
-    Point center;
     Scalar color =  CV_RGB(0,255,0);
-    int radius;
-    Rect face = currentFace_.toRect();
-    double aspect_ratio = (double)face.width/face.height;
-    if( 0.75 < aspect_ratio && aspect_ratio < 1.3 )
-    {
-    center.x = cvRound((face.x + face.width*0.5));
-    center.y = cvRound((face.y + face.height*0.5));
-    radius = cvRound((face.width + face.height)*0.25);
-    circle( frameCpy_, center, radius, color, 3, 8, 0 );
-    }
-    else
-    rectangle(frameCpy_, cvPoint(cvRound(face.x), cvRound(face.y)),
-              cvPoint(cvRound(face.x + face.width-1),
-                      cvRound(face.y + face.height-1)),
-              color, 3, 8, 0);
+    ellipse(frameCpy_, currentFace_, color, 3);
     drawFeatures();
 }
 
@@ -181,29 +165,9 @@ void Facetrack::remove_bad_features(float pStandardDeviationTreshold){
 }
 
 //fit the face ellipse from the feature points
-Rect Facetrack::faceFromPoints(void){
-    Rect face;
-    //compute average of all feature points
-    Point2f avg(0,0), min(-1,-1), max(-1,-1);
-    for (auto& f: corners_){
-        avg += f;
-        if (min.x == -1 or min.x > f.x)
-            min.x = f.x;
-        if (max.x == -1 or max.x < f.x)
-            max.x = f.x;
-        if (min.y == -1 or min.y > f.y)
-            min.y = f.y;
-        if (max.y == -1 or max.y < f.y)
-            max.y = f.y;
-    }
-    avg.x /= corners_.size();
-    avg.y /= corners_.size();
-    int dx = (int)(max.x - min.x);
-    int dy = (int)(max.y - min.y);
-    face.x = avg.x-dx/2;
-    face.y = avg.y-dx/2;
-    face.width = dx;
-    face.height = dy;
+cv::RotatedRect Facetrack::faceFromPoints(void){
+    cv::RotatedRect face = fitEllipse(corners_);
+    track_box_ = face.boundingRect();
     return face;
 }
 
@@ -221,6 +185,9 @@ void Facetrack::rescaleFeatures(Rect face_region)
 void Facetrack::addFeatures(Mat& img){
     int w = track_box_.width*expand_roi_;
     int h = track_box_.height*expand_roi_;
+    if (w == 0 || h == 0){
+        return;
+    }
     cv::Rect roiBox(track_box_.x, track_box_.y, w, h);
 
     Mat roi = img(roiBox).clone();
@@ -237,7 +204,8 @@ void Facetrack::addFeatures(Mat& img){
                         k_ );
     for (auto& corner: corners){
         int distance = distanceToCluster(corner, corners_);
-        if (distance < addFeatureDistance_){
+        qDebug()<<"Distance: "<<distance;
+        if (distance > addFeatureDistance_){
             corners_.push_back(corner);
         }
     }
@@ -279,6 +247,7 @@ void Facetrack::detectHead(void)
             findHead_ = false;
             firstFeatures_ = true;
             detect_box_ = faces[0];
+            expand_roi_ = expand_roi_ini_;
         }
     }
 
@@ -297,6 +266,7 @@ void Facetrack::detectHead(void)
                             k_ );
         previous_img = crop;
         firstFeatures_ = false;
+        track_box_ = detect_box_;
     }
         next_img = crop;
         vector<uchar> status;
@@ -309,24 +279,14 @@ void Facetrack::detectHead(void)
                              status,
                              err);
         corners_.clear();
-        float total_error = 0;
-        for(size_t i = 0; i < status.size(); ++i){
-            total_error += err[i];
-            if (status[i]){
-                corners_.push_back(all_corners[i]);
-            }
-        }
-        total_error/=err.size();
-        if (total_error > 2.0f){
-            findHead_ = true;
-        }
-
+        corners_ = all_corners;
         remove_bad_features(2.5f);
 
         if (corners_.size() < min_features_){
             expand_roi_ = expand_roi_ini_ * expand_roi_;
             addFeatures(next_img);
         }
+
         last_corners_ = corners_;
 
         float succes = 0;
@@ -339,7 +299,7 @@ void Facetrack::detectHead(void)
             findHead_ = true;
 
         rescaleFeatures(detect_box_);
-        currentFace_ = coord_t(faceFromPoints());
+        currentFace_ = faceFromPoints();
         next_img.copyTo(previous_img);
         newFaceFound_ = true;
         WTLeeTrackPosition();
@@ -361,8 +321,10 @@ void Facetrack::WTLeeTrackPosition (void)
     float radPerPix = (fov_/fovWidth);
 
     //get the size of the head in degrees (relative to the field of view)
-    float dx = (float)(currentFace_.x1 - currentFace_.x2);
-    float dy = (float)(currentFace_.y1 - currentFace_.y2);
+    float dx = (float)currentFace_.boundingRect().width;
+    float dy = (float)currentFace_.boundingRect().height;
+    //float dx = (float)(currentFace_.x1 - currentFace_.x2);
+    //float dy = (float)(currentFace_.y1 - currentFace_.y2);
     float pointDist = (float)sqrt(dx * dx + dy * dy);
     float angle = radPerPix * pointDist / 2.0;
 
@@ -372,8 +334,10 @@ void Facetrack::WTLeeTrackPosition (void)
     head_.z = (float)(DEPTH_ADJUST + scale_*((AVG_HEAD_MM / 2) / std::tan(angle)) / (float)SCREENHEIGHT);
 
     //average distance = center of the head
-    float aX = (currentFace_.x1 + currentFace_.x2) / 2.0f;
-    float aY = (currentFace_.y1 + currentFace_.y2) / 2.0f;
+    float aX = currentFace_.center.x;
+    float aY = currentFace_.center.y;
+    //float aX = (currentFace_.x1 + currentFace_.x2) / 2.0f;
+    //float aY = (currentFace_.y1 + currentFace_.y2) / 2.0f;
 
     // Set the head position horizontally
     head_.x = scale_*((float)sin(radPerPix * (aX - camW2)) * head_.z);
@@ -420,40 +384,6 @@ QImage Facetrack::putImage(const Mat& mat)
     }
 }
 
-/*
- * Smooth the movement
- * TODO
- */
-void Facetrack::stabilize(Rect pNewFace)
-{
-    coord_t newFace(pNewFace);
-    prevFaces_.push_back(newFace);
-    if (prevFaces_.size() > NB_SAMPLE_FILTER)
-        prevFaces_.pop_front();
-
-    coord_t result;
-    int cumul = 0;
-
-    //compute the weighted average
-    for(int i=0; i < prevFaces_.size(); ++i)
-    {
-        cumul += weights_[i];
-        result.x1 += prevFaces_.at(i).x1*weights_[i];
-        result.y1 += prevFaces_.at(i).y1*weights_[i];
-        result.x2 += prevFaces_.at(i).x2*weights_[i];
-        result.y2 += prevFaces_.at(i).y2*weights_[i];
-    }
-
-    //don't forget to normalize
-    result.x1 /=  cumul;
-    result.y1 /= cumul;
-    result.x2 /= cumul;
-    result.y2 /= cumul;
-
-    currentFace_ = result;
-    newFaceFound_ = true;
-    WTLeeTrackPosition();
-}
 
 bool Facetrack::isNewFace(void)
 {

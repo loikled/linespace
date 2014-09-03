@@ -65,13 +65,14 @@ void LeapListener::onFrame(const Controller& controller)
     {
         Hand hand = frame.hands().rightmost();
         rightHand_ = hand.id();
-        fingerpos = hand.fingers().rightmost().tipPosition();
-        float angleThumbIndex = 0.0f;
-        if(hand.fingers().count() == 2)
+
+        Finger rightIndex = hand.fingers().fingerType(Finger::TYPE_INDEX)[0];
+        Finger rightThunb = hand.fingers().fingerType(Finger::TYPE_THUMB)[0];
+
+        fingerpos = rightIndex.tipPosition();
+        if(!rightThunb.isExtended())
         {
-            angleThumbIndex = (hand.fingers().leftmost().direction().angleTo(hand.fingers().rightmost().direction())*180.0f)/PI;
-            if (abs(angleThumbIndex > 45.0f))
-                writing_ = true;
+            writing_ = true;
         }
         else
         {

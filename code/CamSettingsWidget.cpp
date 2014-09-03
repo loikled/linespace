@@ -5,7 +5,7 @@
 
 CamSettingsWidget::CamSettingsWidget(QWidget* parent)
     :QWidget(parent),
-      gains_(1.0,1.0,1.0),
+      gains_(1.0, 1.0, 1.0),
       sliderPhi_(0),
       sliderTheta_(0),
       sliderR_(0),
@@ -84,8 +84,9 @@ void CamSettingsWidget::initGui(){
     editR_->setRange(0.1, 4.0);
     editR_->setSingleStep(0.1);
 
-    slotUpdateSpinBox();
+    gains_ = Leap::Vector(1.0f, 1.0f, 1.0f);
     slotUpdateSliders();
+    slotUpdateSpinBox();
 }
 
 void CamSettingsWidget::slotUpdateSpinBox(){

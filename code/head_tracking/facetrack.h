@@ -80,7 +80,7 @@ private:
      // k – Free parameter of Harris detector
      const double k_ = 0.04;
 
-     const float outlierTreshold_ = 2.5f;
+     const float outlierTreshold_ = 5.0f;
 
      bool findHead_;
      bool firstFeatures_;

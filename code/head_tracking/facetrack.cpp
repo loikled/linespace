@@ -290,7 +290,6 @@ void Facetrack::detectHead(void)
         }
     }
 
-    //Mat crop = gray(detect_box_).clone();
     //initialise tracking by finding features in the face region
     if( firstFeatures_ || last_corners_.size() == 0){
 
@@ -344,8 +343,6 @@ void Facetrack::detectHead(void)
                 return;
             }
         }
-
-
        if (corners_.size() < min_features_){
             expand_roi_ = expand_roi_ini_ * expand_roi_;
             addFeatures(next_img);
@@ -354,15 +351,6 @@ void Facetrack::detectHead(void)
         }
         last_corners_ = corners_;
 
-        /*float succes = 0;
-        for (auto& s : status){
-            if ( s )
-                succes++;
-        }
-        succes = succes*100/status.size();
-        if (succes < 50)
-            findHead_ = true;
-    */
         currentFace_ = faceFromPoints();
         next_img.copyTo(previous_img);
         newFaceFound_ = true;

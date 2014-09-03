@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets opengl
+QT += core gui widgets opengl
 
 TARGET = linespace
 CONFIG   -= app_bundle
@@ -14,7 +14,6 @@ TEMPLATE = app
 QMAKE_CXXFLAGS += -std=c++11
 
 INCLUDEPATH += /usr/local/include/opencv
-#INCLUDEPATH += ../code/leapmotion
 
 #opencv libraries
 LIBS += -L/usr/local/lib

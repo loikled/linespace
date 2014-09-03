@@ -1,7 +1,12 @@
 #include "glwidget.h"
 
 #include <math.h>
-#include <GL/glu.h>
+#ifdef __APPLE__
+    #include <OPENGL/gl.h>
+    #include <OPENGL/glu.h>
+#else
+    #include <GL/glu.h>
+#endif
 #include <iostream>
 #include <QMutexLocker>
 

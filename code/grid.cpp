@@ -1,7 +1,7 @@
 #include "grid.h"
 
 
-const float Grid::defaultUnit = 0.05f;
+const float Grid::defaultUnit = 0.2f;
 Grid::Grid(QObject *parent) :
     QObject(parent),
     unit_(defaultUnit),

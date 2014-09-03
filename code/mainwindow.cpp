@@ -29,7 +29,7 @@ void mainwindow::init(void)
 
     webcamView_ = new QLabel("Face View",this);
     webcamView_->setWindowFlags(Qt::Window);
-    webcamView_->setMinimumSize(250,250);
+    webcamView_->setMinimumSize(500, 500);
     webcamView_->hide();
 
     tracker_.init();

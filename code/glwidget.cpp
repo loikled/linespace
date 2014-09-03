@@ -31,7 +31,7 @@ GlWidget::item_t::item_t(float pSize, texId_t pText)
 }
 
 GlWidget::GlWidget(QWidget *parent) :
-    Glview(60,parent),
+    Glview(100, parent),
     maxRecordTimer_(0),
     curentRecordTime_(0),
     recording_(false),
@@ -387,10 +387,9 @@ void GlWidget::customEvent(QEvent* pEvent)
         case HandEvent::Grabbed:
             break;
        case HandEvent::Moved:
-
-            //convert normalize hand pos to our interaction box
-            fingerPos = (event->pos()+Vector(-0.5f,-0.5f,-1.0f));
-            cursor_.slotMove(fingerPos);
+            //update cursor to our coordinates
+            cursor_.slotMove(event->pos());
+            fingerPos = cursor_.getPos();
             if(event->writting())
             {
                 line_t line(lastFingerPos, fingerPos, curentRecordTime_);

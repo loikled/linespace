@@ -19,3 +19,11 @@ You need to copy the file libLeap.so from the sdk into the code/leapmotion folde
 Windows
 =======
 For using with QtCreator and Mingw compiler, use the libLeap.dll from https://leapmotion.app.box.com/s/4lg9frhquuvu89xd0z4j
+
+OS X
+====
+install opencv (macport, source)
+install Leap Motion SDK
+sudo ln -s LeapDeveloperKit/LeapSDK/lib/libc++/libLeap.dylib /usr/local/lib/libLeap.dylib
+sudo ln -s LeapDeveloperKit/LeapSDK/include/Leap.h /usr/local/include/Leap.h
+sudo ln -s LeapDeveloperKit/LeapSDK/include/LeapMath.h /usr/local/include/LeapMath.h

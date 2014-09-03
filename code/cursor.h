@@ -21,6 +21,7 @@ private:
     Leap::Vector pos_;
     CursorState_e state_;
     float size_;
+    float sensitivity_;
 
 public:
     explicit Cursor(QObject *parent = 0);

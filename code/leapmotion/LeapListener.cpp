@@ -13,7 +13,6 @@
 #define ZOOM_FACTOR 0.01f // each frame in zoom moves by this.
 #define RESWIPE_INTERVAL 200 //minimum time between 2 swipes in ms
 
-
 LeapListener::LeapListener()
     : rightHand_(-1),
       leftHand_(-1),
@@ -67,15 +66,17 @@ void LeapListener::onFrame(const Controller& controller)
         Hand hand = frame.hands().rightmost();
         rightHand_ = hand.id();
         fingerpos = hand.fingers().rightmost().tipPosition();
-        if(hand.fingers().count() == 2 && hand.fingers().leftmost().direction().angleTo(hand.fingers().rightmost().direction())*180.0f/PI > 40.0f)
+        float angleThumbIndex = 0.0f;
+        if(hand.fingers().count() == 2)
         {
-            writing_ = true;
+            angleThumbIndex = (hand.fingers().leftmost().direction().angleTo(hand.fingers().rightmost().direction())*180.0f)/PI;
+            if (abs(angleThumbIndex > 45.0f))
+                writing_ = true;
         }
         else
         {
             writing_ = false;
         }
-        fingerpos = hand.fingers().rightmost().tipPosition();
         InteractionBox box = frame.interactionBox();
         if ( box.isValid() )
             fingerPos_ = box.normalizePoint(fingerpos, false);
@@ -88,8 +89,6 @@ void LeapListener::onFrame(const Controller& controller)
     {
         writing_ = false;
     }
-
-
 }
 
 void LeapListener::detectGesture(const Frame& pFrame)

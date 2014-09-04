@@ -394,6 +394,11 @@ void GlWidget::customEvent(QEvent* pEvent)
             {
                 line_t line(lastFingerPos, fingerPos, curentRecordTime_);
                 lineList_.append(line);
+                startRecord();
+            }
+            else
+            {
+                stopRecord();
             }
             lastFingerPos = fingerPos;
             break;

@@ -34,6 +34,16 @@ int HandEvent::item()
     return itemSelected_;
 }
 
+void HandEvent::sliderAngle(float angle)
+{
+    sliderAngle_ = angle;
+}
+
+float HandEvent::sliderAngle()
+{
+    return sliderAngle_;
+}
+
 HandEvent::Selection_t HandEvent::selectMode()
 {
     return selection_;

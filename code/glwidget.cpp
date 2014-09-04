@@ -352,6 +352,7 @@ int GlWidget::closestItem(float pTreshold)
 void GlWidget::customEvent(QEvent* pEvent)
 {
     Leap::Vector fingerPos;
+    int newCurrentRecordTime;
     HandEvent* event = dynamic_cast<HandEvent*>(pEvent);
     if ( event )
     {
@@ -405,6 +406,24 @@ void GlWidget::customEvent(QEvent* pEvent)
        case HandEvent::Circle:
             qDebug()<<"Circle Event!";
             break;
+
+       case HandEvent::Slider:
+
+            if(abs(event->sliderAngle()) < 55)
+            {
+                newCurrentRecordTime = curentRecordTime_ - (int)event->sliderAngle()/10;
+            }
+            else
+            {
+                newCurrentRecordTime = curentRecordTime_ - (int)event->sliderAngle();
+            }
+
+            if(newCurrentRecordTime > 0 && newCurrentRecordTime < maxRecordTimer_)
+            {
+                curentRecordTime_ = newCurrentRecordTime;
+            }
+            break;
+
         default:
             break;
         }

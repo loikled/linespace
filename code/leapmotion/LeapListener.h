@@ -73,6 +73,7 @@ private:
     void grabEvent();
     void moveEvent();
     void circleEvent();
+    void sliderEvent(float angle);
 };
 
 #endif // LEAPLISTENER_H

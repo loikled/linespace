@@ -16,6 +16,7 @@ using namespace Leap;
 #define EVENT_GRAB 1008
 #define EVENT_MOVE 1009
 #define EVENT_CIRCLE 1010
+#define EVENT_SLIDER 1011
 
 //defining a custom Event
 class HandEvent: public QEvent
@@ -34,6 +35,7 @@ public:
     static const QEvent::Type Grabbed = static_cast<QEvent::Type>(EVENT_GRAB);
     static const QEvent::Type Moved = static_cast<QEvent::Type>(EVENT_MOVE);
     static const QEvent::Type Circle = static_cast<QEvent::Type>(EVENT_CIRCLE);
+    static const QEvent::Type Slider = static_cast<QEvent::Type>(EVENT_SLIDER);
 
 private:
     Leap::Vector pos_; // index tip position
@@ -41,6 +43,7 @@ private:
     int itemSelected_;
     Selection_t selection_;
     float zoomOffset_;
+    float sliderAngle_;
 
 public:
     //types must be greater than User
@@ -52,6 +55,8 @@ public:
     Leap::Vector pos();
     bool writting();
     void writting(bool isWritting);
+    float sliderAngle();
+    void sliderAngle(float angle);
     int item();
     HandEvent::Selection_t selectMode();
     float zoom();

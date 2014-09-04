@@ -98,18 +98,11 @@ void LeapListener::onFrame(const Controller& controller)
 
     if (leftHand.isLeft() && leftHand.isValid())
     {
-        float angle = leftHand.direction().roll()*180.0f/PI;
-        if(abs(angle) > 45.0f)
+        float angle = leftHand.palmNormal().roll()*180.0f/PI;
+
+        if(abs(angle)>25.0f)
         {
-            qDebug() << "left";
-        }
-        if(abs(angle) < 45.0f)
-        {
-            qDebug() << "right";
-        }
-        if( abs(angle) > 90.0f)
-        {
-            qDebug() << "middle";
+            sliderEvent(angle);
         }
     }
 
@@ -264,6 +257,17 @@ void LeapListener::circleEvent()
     {
         HandEvent* event = 0;
         event = new HandEvent(HandEvent::Circle, rPos_);
+        QApplication::postEvent(receiver_, event);
+    }
+}
+
+void LeapListener::sliderEvent(float angle)
+{
+    if ( receiver_ )
+    {
+        HandEvent* event = 0;
+        event = new HandEvent(HandEvent::Slider);
+        event->sliderAngle(angle);
         QApplication::postEvent(receiver_, event);
     }
 }

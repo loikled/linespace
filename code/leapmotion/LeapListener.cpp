@@ -61,13 +61,18 @@ void LeapListener::onFrame(const Controller& controller)
     // Get the most recent frame and report some basic information
     const Frame frame = controller.frame();
     Vector fingerpos;
-    if (frame.hands().count() >= 1)
-    {
-        Hand hand = frame.hands().rightmost();
-        rightHand_ = hand.id();
 
-        Finger rightIndex = hand.fingers().fingerType(Finger::TYPE_INDEX)[0];
-        Finger rightThunb = hand.fingers().fingerType(Finger::TYPE_THUMB)[0];
+
+
+    Hand rightHand = frame.hands().rightmost();
+    Hand leftHand = frame.hands().leftmost();
+
+    if (rightHand.isRight() && rightHand.isValid())
+    {
+        rightHand_ = rightHand.id();
+
+        Finger rightIndex = rightHand.fingers().fingerType(Finger::TYPE_INDEX)[0];
+        Finger rightThunb = rightHand.fingers().fingerType(Finger::TYPE_THUMB)[0];
 
         fingerpos = rightIndex.tipPosition();
         if(!rightThunb.isExtended())
@@ -90,6 +95,26 @@ void LeapListener::onFrame(const Controller& controller)
     {
         writing_ = false;
     }
+
+    if (leftHand.isLeft() && leftHand.isValid())
+    {
+        float angle = leftHand.direction().roll()*180.0f/PI;
+        if(abs(angle) > 45.0f)
+        {
+            qDebug() << "left";
+        }
+        if(abs(angle) < 45.0f)
+        {
+            qDebug() << "right";
+        }
+        if( abs(angle) > 90.0f)
+        {
+            qDebug() << "middle";
+        }
+    }
+
+
+
 }
 
 void LeapListener::detectGesture(const Frame& pFrame)

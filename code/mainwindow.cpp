@@ -147,7 +147,6 @@ void mainwindow::slotSetTimings(int currentTime, int totalTime)
     }
     textBlock->clear();
     textBlock->insert(setTimeFromInt(currentTime)->toString("hh:mm:ss:zzz") + " / " + setTimeFromInt(totalTime)->toString("hh:mm:ss:zzz"));
-
 }
 
 QTime* mainwindow::setTimeFromInt(int intTime)
@@ -189,9 +188,9 @@ void mainwindow::slotGetNewFrame()
 {
     tracker_.getNewImg();
     tracker_.detectHead();
+    tracker_.drawFace();
     if (tracker_.isNewFace())
     {
-        tracker_.drawFace();
         imgWebcam_ = tracker_.getPixmap();
         emit signalNewFrame(imgWebcam_);
     }
@@ -208,10 +207,10 @@ void mainwindow::keyPressEvent(QKeyEvent *keyEvent)
                 showMaximized();
                 menuBar()->show();
             }
-            else{
+            /*else{
                 close();
                 QApplication::quit();
-            }
+            }*/
             break;
         case Qt::Key_F:
             if (isFullScreen())

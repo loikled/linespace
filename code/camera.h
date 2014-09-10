@@ -10,6 +10,7 @@ class Cam : public QObject{
         Leap::Vector angleFactor_; //magnitude of movement from head position
         Leap::Vector focus_; //point that is put in the center of the screen
         float zoom_; // controls size of the field of view
+        static const float moveOffset_; // Hysteresis treshold, if incoming Z doesn't move enough, don't move.
 
     public:
         Cam();

@@ -119,6 +119,7 @@ private:
     void drawGrid();
     void drawCurve();
     void drawCursor();
+    void drawFocus();
 
 signals:
     void setTimeAndTotalTime(int currentTime, int totalTime);

@@ -127,6 +127,7 @@ void GlWidget::paintGL()
     // Objects
     drawCursor();
     drawCurve();
+    drawFocus();
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -312,6 +313,31 @@ void GlWidget::drawCursor(){
     glEnable(GL_LIGHTING);
 }
 
+void GlWidget::drawFocus(){
+    GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 0.0 };
+    GLfloat light_diffuse[] = { 0.0, 1.0, 0.0, 1.0 };
+    GLfloat light_specular[] = { 0.0, 0.0, 0.0, 1.0 };
+    GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    GLUquadric* quad = gluNewQuadric();
+    gluQuadricOrientation(quad, GLU_OUTSIDE);
+
+    Leap::Vector focus = cam_.getFocus();
+
+    float size = 0.02f;
+    //glusphere draws always at 0,0 so we change the model draw space
+    glPushMatrix();
+    glTranslatef(focus.x, focus.y, focus.z);
+    gluSphere(quad, size , 100, 100);
+    glPopMatrix();
+    gluDeleteQuadric(quad);
+}
+
 void GlWidget::clearCurves(){
     lineList_.clear();
 }
@@ -384,6 +410,7 @@ void GlWidget::customEvent(QEvent* pEvent)
             break;
         case HandEvent::Swiped:
                 clearCurves();
+                cam_.resetFocus();
                 break;
         case HandEvent::Grabbed:
             break;
@@ -408,7 +435,7 @@ void GlWidget::customEvent(QEvent* pEvent)
             break;
 
        case HandEvent::Slider:
-
+/*
             if(abs(event->sliderAngle()) < 55)
             {
                 newCurrentRecordTime = curentRecordTime_ - (int)event->sliderAngle()/10;
@@ -421,6 +448,45 @@ void GlWidget::customEvent(QEvent* pEvent)
             if(newCurrentRecordTime > 0 && newCurrentRecordTime < maxRecordTimer_)
             {
                 curentRecordTime_ = newCurrentRecordTime;
+            }
+            */
+
+            if(abs(event->sliderAngle()) < 55)
+            {
+                float newDist = event->sliderAngle()/10;
+
+                int index = cam_.getFocusIndex();
+                Leap::Vector focus = cam_.getFocus();
+                float dist = 0;
+
+                if (index < lineList_.size()){
+                    line_t line = lineList_.at(index);
+                    if (newDist < 0){
+                        dist = -focus.distanceTo(line.firstPoint_);
+                        if (newDist < dist){
+                            focus = line.firstPoint_;
+                            index--;
+                            if (index < 0)
+                                index = 0;
+                        }else{
+                            focus = focus + (focus - line.firstPoint_)*dist;
+                        }
+                    }
+                    else{
+                        dist = focus.distanceTo(line.secondPoint_);
+                        if (newDist > dist){
+                            focus = line.secondPoint_;
+                            index++;
+                            if (index >= lineList_.size())
+                                index = lineList_.size()-1;
+                        }else{
+                            focus = focus + (focus - line.secondPoint_)*dist;
+                        }
+                    }
+                    cam_.setFocus(focus);
+                    cam_.setFocusIndex(index);
+                }
+
             }
             break;
 

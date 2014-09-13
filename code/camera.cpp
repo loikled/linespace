@@ -8,11 +8,35 @@ Cam::Cam()
     :pos_(Leap::Vector(0.0, 0.0, 1.0)),
      angleFactor_(Leap::Vector(1.0, 1.0, 1.0)),
      focus_(Leap::Vector(0, 0, 0)),
-     zoom_(1.0f)
+     zoom_(1.0f),
+    focusIndex_(0)
 {
 }
 
 Cam::~Cam(){}
+
+void Cam::focusUp(int max){
+    if (focusIndex_ < max)
+        focusIndex_++;
+    else
+        focusIndex_ = max;
+}
+
+void Cam::focusDown(){
+   if (focusIndex_ > 0)
+       focusIndex_--;
+   else
+       focusIndex_ = 0;
+}
+
+void Cam::resetFocus(){
+    focusIndex_ = 0;
+    focus_ = Leap::Vector(0,0,0);
+}
+
+uint Cam::getFocusIndex(){
+    return focusIndex_;
+}
 
 void Cam::setFocus(Leap::Vector& focus){
     focus_ = focus;

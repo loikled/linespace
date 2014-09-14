@@ -31,12 +31,12 @@ void Shape::newType(int type)
 
 void setCircle(int nbSegment)
 {
-
+/*
     Leap::Vector firstPoint = center + direction;
     float angle = 2*PI/nbSegment;
        for(int i = 0; i<nbSegment+1;i++){
            Leap::Vector firstPoint = cos(angle*i)*size_*direction + sin(angle*i)*size_*normal;
-       }
+       }*/
 }
 
 void Shape::changeLeft(Leap::Vector left)

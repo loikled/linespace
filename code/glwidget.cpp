@@ -505,7 +505,7 @@ void GlWidget::customEvent(QEvent* pEvent)
                 float dist = 0;
 
                 if (index < lineList_.size()){
-                    line_t line = lineList_.at(index);
+                    Shape::line_t line = lineList_.at(index);
                     if (newDist < 0){
                         dist = -focus.distanceTo(line.firstPoint_);
                         if (newDist < dist){

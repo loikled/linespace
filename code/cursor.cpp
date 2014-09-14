@@ -25,6 +25,12 @@ const Leap::Vector Cursor::getPos() const{
     return pos_;
 }
 
+
+const Leap::Vector Cursor::getPos(const Leap::Vector& pos) const{
+    Leap::Vector offset(-0.5f, -0.5f, -1.0f);
+    return (pos + offset)*sensitivity_;
+}
+
 float Cursor::getSize() const{
     return size_;
 }

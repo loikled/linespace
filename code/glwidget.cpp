@@ -69,7 +69,7 @@ void GlWidget::initializeGL()
     lastElapsedTime_ = recordTimer_.elapsed();
 
     // Just display the drawing even without any drawing yet
-    line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.0,0.0,0.0),0);
+    Shape::line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.0,0.0,0.0),0);
     lineList_.append(line);
 
     glEnable(GL_TEXTURE_2D);
@@ -125,8 +125,10 @@ void GlWidget::paintGL()
     drawGrid();
 
     // Objects
+
+    drawCurve(shape_.getList());
     drawCursor();
-    drawCurve();
+    drawCurve(lineList_);
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -177,28 +179,71 @@ void GlWidget::setNewTime(int time)
     lastElapsedTime_ = recordTimer_.elapsed();
 }
 
-void GlWidget::drawCurve(){
+void GlWidget::drawCylinder(Leap::Vector point1,Leap::Vector point2)
+{
+    glDisable(GL_LIGHTING);
+    /*
+    GLUquadric* quad = gluNewQuadric();
+    gluQuadricOrientation(quad, GLU_OUTSIDE);
+    //glusphere draws always at 0,0 so we change the model draw space
+
+    glPushMatrix();
+
+    glTranslatef(point1.x, point1.y, point1.z);
+
+    float adj = point2.z-point1.z;
+    if(adj != 0)
+    {
+        if(adj > 0)
+            glRotatef(-atan((point2.x-point1.x)/adj)*180/PI,0,1,0);
+        else
+            glRotatef(atan((point2.x-point1.x)/adj)*180/PI,0,1,0);
+
+    }
+    float adj2 = sqrt((point2.z-point1.z)*(point2.z-point1.z)+(point2.x-point1.x)*(point2.x-point1.x));
+    if(adj2 != 0)
+    {
+        if(adj2 > 0)
+            glRotatef(180+atan((point2.y-point1.y)/adj2)*180/PI,1, 0, 0);
+        else
+            glRotatef(-atan((point2.y-point1.y)/adj2)*180/PI,1, 0, 0);
+    }
+    //if(point2.x != 0)
+      //  glRotatef(point2.angleTo(Leap::Vector(0,0,1))*180/PI,0,0,1);
+
+    gluCylinder(quad, 0.005, 0.005, point1.distanceTo(point2), 30, 30);
+    glPopMatrix();
+    gluDeleteQuadric(quad);
+    */
+
+    glColor4f(1.0, 0.0, 0.0, 0.5);
+
+    glLineWidth(4);
+    glBegin(GL_LINES);
+
+    glVertex3f(point1.x, point1.y, point1.z);
+    glVertex3f(point2.x, point2.y, point2.z);
+    glEnd();
+
+    glEnable(GL_LIGHTING);
+}
+
+void GlWidget::drawCurve(QList<Shape::line_t> list){
     if(recording_ or (playing_ && (curentRecordTime_+ recordTimer_.elapsed() - lastElapsedTime_) < maxRecordTimer_))
     {
         curentRecordTime_ += (recordTimer_.elapsed() - lastElapsedTime_);
         lastElapsedTime_ = recordTimer_.elapsed();
     }
-    glDisable(GL_LIGHTING);
-    glLineWidth(5.5);
-    glColor4f(0.0, 1.0, 0.0, 1.0);
-    glBegin(GL_LINES);
-    foreach (line_t line, lineList_) {
+
+    foreach (Shape::line_t line, list) {
 
         if(line.timePainted_> curentRecordTime_)
         {
             continue;
         }
-        glNormal3f(0,0,1);
-        glVertex3f(line.firstPoint_.x, line.firstPoint_.y, line.firstPoint_.z);
-        glVertex3f(line.secondPoint_.x, line.secondPoint_.y, line.secondPoint_.z);
+        drawCylinder(line.firstPoint_,line.secondPoint_);
     }
-    glEnd();
-    glEnable(GL_LIGHTING);
+
     if(maxRecordTimer_ < curentRecordTime_)
     {
         maxRecordTimer_ = curentRecordTime_;
@@ -353,7 +398,7 @@ void GlWidget::customEvent(QEvent* pEvent)
 {
     Leap::Vector fingerPos;
     int newCurrentRecordTime;
-    HandEvent* event = dynamic_cast<HandEvent*>(pEvent);
+    HandEvent* event = dynamic_cast<HandEvent*>(pEvent);  
     if ( event )
     {
 
@@ -393,7 +438,7 @@ void GlWidget::customEvent(QEvent* pEvent)
             fingerPos = cursor_.getPos();
             if(event->writting())
             {
-                line_t line(lastFingerPos, fingerPos, curentRecordTime_);
+                Shape::line_t line(lastFingerPos, fingerPos, curentRecordTime_);
                 lineList_.append(line);
                 startRecord();
             }
@@ -423,8 +468,44 @@ void GlWidget::customEvent(QEvent* pEvent)
                 curentRecordTime_ = newCurrentRecordTime;
             }
             break;
+        case HandEvent::Pinch:
+            if(isPinchLeft_ && isPinchRight_ && !newShape_)
+            {
+                shape_.newType(0);
+                newShape_ = true;
+            }
 
-        default:
+            if(event->pinchIsLeft())
+            {
+                isPinchLeft_  = true;
+                shape_.changeLeft(cursor_.getPos(event->pos()));
+            }
+            else
+            {
+                isPinchRight_ = true;
+                shape_.changeRight(cursor_.getPos(event->pos()));
+            }
+
+            break;
+        case HandEvent::Release:
+            if(event->pinchIsLeft())
+            {
+                isPinchLeft_  = false;
+            }
+            else
+            {
+                isPinchRight_ = false;
+            }
+            if(!isPinchLeft_ && !isPinchRight_)
+            {
+                newShape_ = false;
+                foreach(Shape::line_t line, shape_.getList())
+                {
+                    lineList_.append(line);
+                }
+            }
+            break;
+    default:
             break;
         }
     }

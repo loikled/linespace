@@ -12,6 +12,7 @@
 #include "glview.h"
 #include "tracking_defines.h"
 #include "cursor.h"
+#include "shape.h"
 
 #define NB_TEXTURE 2
 #define BOX_SIZE 8.0f //the grid is always inside the box
@@ -42,14 +43,6 @@ public:
         item_t(float pSize = 1.0f, texId_t pText = CRATE);
     };    
     typedef QSet<int> GrabList_t;
-    //simple way to describe line
-    struct line_t {
-        Leap::Vector firstPoint_;
-        Leap::Vector secondPoint_;
-        int timePainted_;
-        //constructor
-        line_t(Leap::Vector firstPoint, Leap::Vector secondPoint, int timePainted){firstPoint_ = firstPoint;secondPoint_ = secondPoint;timePainted_ = timePainted;}
-    };
 
 private:
     LeapListener leapListener_;
@@ -64,13 +57,17 @@ private:
     int lastElapsedTime_;
     bool recording_;
     bool playing_;
+    Shape shape_;
+    bool isPinchRight_ = false;
+    bool isPinchLeft_ = false;
+    bool newShape_ = false;
 
     Cam cam_;
     Cursor cursor_;
 
     Leap::Vector palmPos_;
     Leap::Vector lastFingerPos;
-    QList<line_t> lineList_;
+    QList<Shape::line_t> lineList_;
     HandEvent::Selection_t selectionMode_;
     float boxSize_;
     int gridSize_;
@@ -117,8 +114,9 @@ private:
     void handleGrab();
     void customEvent(QEvent* pEvent);
     void drawGrid();
-    void drawCurve();
+    void drawCurve(QList<Shape::line_t>);
     void drawCursor();
+    void drawCylinder(Leap::Vector point1, Leap::Vector point2);
 
 signals:
     void setTimeAndTotalTime(int currentTime, int totalTime);

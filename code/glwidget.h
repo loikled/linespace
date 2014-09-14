@@ -117,6 +117,7 @@ private:
     void drawCurve(QList<Shape::line_t>);
     void drawCursor();
     void drawCylinder(Leap::Vector point1, Leap::Vector point2);
+    void drawFocus();
 
 signals:
     void setTimeAndTotalTime(int currentTime, int totalTime);

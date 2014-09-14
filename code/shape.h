@@ -26,13 +26,18 @@ public:
     void newType(int type);
     void changeLeft(Leap::Vector left);
     void changeRight(Leap::Vector right);
+    void changeCircleSize(float size);
+    void changeCircleCenter(Leap::Vector center);
+    void changeCircleDirection(Leap::Vector direction);
+    void changeCircleNormal(Leap::Vector normal);
+    void setCircle(int nbSegment);
     QList<line_t> getList();
 
 private:
     QList<line_t>  lineList_;
-    Leap::Vector center;
-    Leap::Vector direction;
-    Leap::Vector normal;
+    Leap::Vector center_;
+    Leap::Vector direction_;
+    Leap::Vector normal_;
     float size_;
 
 };

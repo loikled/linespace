@@ -83,6 +83,8 @@ void GlWidget::initializeGL()
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_MULTISAMPLE);
+
+    shape_.newType(1);
 }
 
 void GlWidget::resizeGL(int width, int height)
@@ -125,6 +127,8 @@ void GlWidget::paintGL()
     drawGrid();
 
     // Objects
+
+
 
     drawCurve(shape_.getList());
     drawCursor();
@@ -476,7 +480,13 @@ void GlWidget::customEvent(QEvent* pEvent)
             lastFingerPos = fingerPos;
             break;
        case HandEvent::Circle:
-            qDebug()<<"Circle Event!";
+
+            shape_.changeCircleCenter(cursor_.getPos(event->pos()));
+            shape_.changeCircleDirection(event->circleDirection_);
+            shape_.changeCircleNormal(event->circleNormal_);
+            shape_.changeCircleSize(event->circleSize_/100);
+
+
             break;
 
        case HandEvent::Slider:
@@ -568,7 +578,7 @@ void GlWidget::customEvent(QEvent* pEvent)
                 newShape_ = false;
                 foreach(Shape::line_t line, shape_.getList())
                 {
-                    lineList_.append(line);
+                    //lineList_.append(line);
                 }
             }
             break;

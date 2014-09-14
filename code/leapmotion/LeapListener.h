@@ -72,7 +72,7 @@ private:
     void swipeEvent();
     void grabEvent();
     void moveEvent();
-    void circleEvent();
+    void circleEvent(Leap::Vector center, Leap::Vector direction, Leap::Vector normal, float size);
     void sliderEvent(float angle);
     void pinchEvent(bool isLeft, Leap::Vector pinchPos);
     void releaseEvent(bool isLeft);

@@ -65,9 +65,16 @@ public:
     void sliderAngle(float angle);
     bool pinchIsLeft();
     void pinchIsLeft(bool isLeft);
+
     int item();
     HandEvent::Selection_t selectMode();
     float zoom();
+
+    //Public variables to draw circle. Too many functions to create then variables are set to public
+    Leap::Vector circleDirection_;
+    Leap::Vector circleNormal_;
+    float circleSize_;
+
 };
 
 

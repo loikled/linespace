@@ -115,6 +115,16 @@ void LeapListener::onFrame(const Controller& controller)
          releaseEvent(false);
         }
 
+        // Circle event
+        Leap::Vector direction = Leap::Vector(cos(rightHand.direction().roll()),sin(rightHand.direction().roll()),0);
+        Leap::Vector normal = Leap::Vector(0, sin(rightHand.direction().pitch()),-cos(rightHand.direction().pitch()));
+        InteractionBox box = frame.interactionBox();
+        if ( box.isValid() )
+            circleEvent(box.normalizePoint(rightHand.sphereCenter(),false), direction, normal, rightHand.sphereRadius());
+
+
+
+
     }
     else
     {
@@ -187,7 +197,7 @@ void LeapListener::detectGesture(const Frame& pFrame)
         case Gesture::TYPE_CIRCLE:
             if ( gest.hands()[0].id() == rightHand_ &&
                  gest.state() == Gesture::STATE_STOP )
-                circleEvent();
+                //circleEvent();
             break;
         default:
             break;
@@ -296,12 +306,15 @@ void LeapListener::moveEvent()
     }
 }
 
-void LeapListener::circleEvent()
+void LeapListener::circleEvent(Leap::Vector center, Leap::Vector direction, Leap::Vector normal, float size)
 {
     if ( receiver_ )
     {
         HandEvent* event = 0;
-        event = new HandEvent(HandEvent::Circle, rPos_);
+        event = new HandEvent(HandEvent::Circle, center);
+        event->circleDirection_ = direction;
+        event->circleNormal_ = normal;
+        event->circleSize_ = size;
         QApplication::postEvent(receiver_, event);
     }
 }

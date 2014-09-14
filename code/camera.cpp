@@ -5,7 +5,7 @@
 const float Cam::moveOffset_ = 0.05f;
 
 Cam::Cam()
-    :pos_(Leap::Vector(0.0, 0.0, 1.0)),
+    :pos_(Leap::Vector(0.0, 0.0, 1.5)),
      angleFactor_(Leap::Vector(1.0, 1.0, 1.0)),
      focus_(Leap::Vector(0, 0, 0)),
      zoom_(1.0f),
@@ -63,9 +63,10 @@ void Cam::slotChangeFactor(const Leap::Vector& gains){
 //headposition is in theta,phy,r format
 void Cam::slotUpdateFromHeadPos(const Leap::Vector& HeadPos)
 {
+    qDebug()<<"Head z: "<< HeadPos.z;
     float oldZ = pos_.z;
     static float targetZ = 1.0f;
-    targetZ = HeadPos.z*angleFactor_.z - focus_.z;
+    targetZ = HeadPos.z*angleFactor_.z + focus_.z + zoom_;
 
     float delta = targetZ - oldZ;
     delta = delta < 0 ? -delta : delta;

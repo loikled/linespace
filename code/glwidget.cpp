@@ -451,9 +451,10 @@ void GlWidget::customEvent(QEvent* pEvent)
             }
             */
 
-            if(abs(event->sliderAngle()) < 55)
+            if(abs(event->sliderAngle()) < 40)
             {
                 float newDist = event->sliderAngle()/10;
+                newDist = -newDist; //change orientation
 
                 int index = cam_.getFocusIndex();
                 Leap::Vector focus = cam_.getFocus();

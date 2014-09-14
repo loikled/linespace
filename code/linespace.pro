@@ -27,7 +27,7 @@ LIBS += -lopencv_video
 LIBS += -lGLU
 
 #leapmotion lib
-LIBS += -L"$$_PRO_FILE_PWD_/leapmotion"
+INCLUDEPATH += /usr/local/include/leapmotion
 LIBS += -lLeap
 
 SOURCES += main.cpp \
@@ -49,11 +49,11 @@ HEADERS += \
     glview.h \
     glwidget.h \
     tracking_defines.h \
-    leapmotion/Leap.h \
     leapmotion/LeapListener.h \
     leapmotion/HandEvent.h \
     camera.h \
     CamSettingsWidget.h \
     grid.h \
     cursor.h \
-    shape.h
+    shape.h \
+    leapmotion/Leap.h

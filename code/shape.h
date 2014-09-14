@@ -33,6 +33,7 @@ private:
     Leap::Vector center;
     Leap::Vector direction;
     Leap::Vector normal;
+    float size_;
 
 };
 

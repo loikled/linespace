@@ -22,6 +22,7 @@ void Shape::newType(int type)
         center = Leap::Vector(0,0,0);
         direction = Leap::Vector(0.4,0,0);
         normal = Leap::Vector(0,0,0.4);
+        size_ = 0.8;
         break;
     default :
         break;
@@ -30,8 +31,11 @@ void Shape::newType(int type)
 
 void setCircle(int nbSegment)
 {
-       for(int i = 0; i<nbSegment;i++){
 
+    Leap::Vector firstPoint = center + direction;
+    float angle = 2*PI/nbSegment;
+       for(int i = 0; i<nbSegment+1;i++){
+           Leap::Vector firstPoint = cos(angle*i)*size_*direction + sin(angle*i)*size_*normal;
        }
 }
 

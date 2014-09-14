@@ -44,6 +44,18 @@ float HandEvent::sliderAngle()
     return sliderAngle_;
 }
 
+void HandEvent::pinchIsLeft(bool isLeft)
+{
+    pinchIsLeft_ = isLeft;
+}
+
+bool HandEvent::pinchIsLeft()
+{
+    return pinchIsLeft_;
+}
+
+
+
 HandEvent::Selection_t HandEvent::selectMode()
 {
     return selection_;

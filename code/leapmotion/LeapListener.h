@@ -74,6 +74,8 @@ private:
     void moveEvent();
     void circleEvent();
     void sliderEvent(float angle);
+    void pinchEvent(bool isLeft, Leap::Vector pinchPos);
+    void releaseEvent(bool isLeft);
 };
 
 #endif // LEAPLISTENER_H

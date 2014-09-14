@@ -56,11 +56,18 @@ void LeapListener::onExit(const Controller& controller)
     qDebug() << "Exited";
 }
 
+
+Leap::Vector middleVector(Vector vect1, Vector vect2)
+{
+        return Vector((vect1.x + vect2.x)/2, (vect1.y + vect2.y)/2, (vect1.z + vect2.z)/2);
+}
+
 void LeapListener::onFrame(const Controller& controller)
 {
     // Get the most recent frame and report some basic information
     const Frame frame = controller.frame();
     Vector fingerpos;
+
 
 
 
@@ -72,24 +79,42 @@ void LeapListener::onFrame(const Controller& controller)
         rightHand_ = rightHand.id();
 
         Finger rightIndex = rightHand.fingers().fingerType(Finger::TYPE_INDEX)[0];
-        Finger rightThunb = rightHand.fingers().fingerType(Finger::TYPE_THUMB)[0];
+        Finger rightThumb = rightHand.fingers().fingerType(Finger::TYPE_THUMB)[0];
 
-        fingerpos = rightIndex.tipPosition();
-        if(!rightThunb.isExtended())
+        if(frame.hands().count() == 1 && rightIndex.isExtended()){
+            fingerpos = rightIndex.tipPosition();
+            if(rightThumb.tipPosition().distanceTo(rightHand.arm().wristPosition()) < 97.0f)
+            {
+                writing_ = true;
+            }
+            else
+            {
+                writing_ = false;
+            }
+            InteractionBox box = frame.interactionBox();
+            if ( box.isValid() )
+                fingerPos_ = box.normalizePoint(fingerpos, false);
+
+            //always send a move event
+            moveEvent();
+            detectGesture(frame);
+            }
+
+
+        // new event to pinch with thumb and index right
+        if(rightThumb.tipPosition().distanceTo(rightIndex.tipPosition()) < 50.0f)
         {
-            writing_ = true;
+            InteractionBox box = frame.interactionBox();
+            Leap:Vector vect = (rightThumb.tipPosition() + rightIndex.tipPosition())/2;
+            if ( box.isValid() )
+               pinchEvent(false,box.normalizePoint(vect, false));
+
         }
         else
         {
-            writing_ = false;
+         releaseEvent(false);
         }
-        InteractionBox box = frame.interactionBox();
-        if ( box.isValid() )
-            fingerPos_ = box.normalizePoint(fingerpos, false);
 
-        //always send a move event
-        moveEvent();
-        detectGesture(frame);
     }
     else
     {
@@ -98,13 +123,33 @@ void LeapListener::onFrame(const Controller& controller)
 
     if (leftHand.isLeft() && leftHand.isValid())
     {
+        Finger leftIndex = leftHand.fingers().fingerType(Finger::TYPE_INDEX)[0];
+        Finger leftThumb = leftHand.fingers().fingerType(Finger::TYPE_THUMB)[0];
+
         float angle = leftHand.palmNormal().roll()*180.0f/PI;
 
-        if(abs(angle)>25.0f)
+        if(abs(angle)>25.0f && frame.hands().count() == 1)
         {
             sliderEvent(angle);
         }
+
+
+        // new event to pinch with thumb and index right
+        if(leftThumb.tipPosition().distanceTo(leftIndex.tipPosition()) < 50.0f )
+        {
+
+            Leap::Vector vect = (leftThumb.tipPosition() + leftIndex.tipPosition())/2;
+            InteractionBox box = frame.interactionBox();
+            if ( box.isValid() )
+                pinchEvent(true,box.normalizePoint(vect, false));
+        }
+        else
+        {
+            releaseEvent(true);
+        }
+
     }
+
 
 
 
@@ -268,6 +313,28 @@ void LeapListener::sliderEvent(float angle)
         HandEvent* event = 0;
         event = new HandEvent(HandEvent::Slider);
         event->sliderAngle(angle);
+        QApplication::postEvent(receiver_, event);
+    }
+}
+
+void LeapListener::pinchEvent(bool isLeft, Vector pinchPos)
+{
+    if ( receiver_ )
+    {
+        HandEvent* event = 0;
+        event = new HandEvent(HandEvent::Pinch,pinchPos);
+        event->pinchIsLeft(isLeft);
+        QApplication::postEvent(receiver_, event);
+    }
+}
+
+void LeapListener::releaseEvent(bool isLeft)
+{
+    if ( receiver_ )
+    {
+        HandEvent* event = 0;
+        event = new HandEvent(HandEvent::Release);
+        event->pinchIsLeft(isLeft);
         QApplication::postEvent(receiver_, event);
     }
 }

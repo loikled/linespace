@@ -17,6 +17,8 @@ using namespace Leap;
 #define EVENT_MOVE 1009
 #define EVENT_CIRCLE 1010
 #define EVENT_SLIDER 1011
+#define EVENT_PINCH 1012
+#define EVENT_RELEASE 1013
 
 //defining a custom Event
 class HandEvent: public QEvent
@@ -36,6 +38,8 @@ public:
     static const QEvent::Type Moved = static_cast<QEvent::Type>(EVENT_MOVE);
     static const QEvent::Type Circle = static_cast<QEvent::Type>(EVENT_CIRCLE);
     static const QEvent::Type Slider = static_cast<QEvent::Type>(EVENT_SLIDER);
+    static const QEvent::Type Pinch = static_cast<QEvent::Type>(EVENT_PINCH);
+    static const QEvent::Type Release = static_cast<QEvent::Type>(EVENT_RELEASE);
 
 private:
     Leap::Vector pos_; // index tip position
@@ -44,6 +48,8 @@ private:
     Selection_t selection_;
     float zoomOffset_;
     float sliderAngle_;
+    bool pinchIsLeft_ = false;
+
 
 public:
     //types must be greater than User
@@ -57,6 +63,8 @@ public:
     void writting(bool isWritting);
     float sliderAngle();
     void sliderAngle(float angle);
+    bool pinchIsLeft();
+    void pinchIsLeft(bool isLeft);
     int item();
     HandEvent::Selection_t selectMode();
     float zoom();

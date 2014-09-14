@@ -40,7 +40,8 @@ SOURCES += main.cpp \
     camera.cpp \
     CamSettingsWidget.cpp \
     grid.cpp \
-    cursor.cpp
+    cursor.cpp \
+    shape.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -54,4 +55,5 @@ HEADERS += \
     camera.h \
     CamSettingsWidget.h \
     grid.h \
-    cursor.h
+    cursor.h \
+    shape.h

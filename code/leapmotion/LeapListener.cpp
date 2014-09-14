@@ -105,7 +105,7 @@ void LeapListener::onFrame(const Controller& controller)
         if(rightThumb.tipPosition().distanceTo(rightIndex.tipPosition()) < 50.0f)
         {
             InteractionBox box = frame.interactionBox();
-            Leap:Vector vect = (rightThumb.tipPosition() + rightIndex.tipPosition())/2;
+            Leap::Vector vect = (rightThumb.tipPosition() + rightIndex.tipPosition())/2;
             if ( box.isValid() )
                pinchEvent(false,box.normalizePoint(vect, false));
 

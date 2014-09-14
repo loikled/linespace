@@ -82,7 +82,7 @@ void mainwindow::init(void)
     buttonLayout->addWidget(button2);
     buttonLayout->addWidget(button3);
 
-    hLayout->addItem(buttonLayout);
+    //hLayout->addItem(buttonLayout);
 
     QMenu* menu = menuBar()->addMenu("&Display");
     QAction* actionStart = new QAction("Start/Stop", this);

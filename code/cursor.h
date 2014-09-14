@@ -19,15 +19,18 @@ public:
 private:
     static const GLfloat colors_[5][4];
     Leap::Vector pos_;
+    // correspond to both pinch left and right hand
     CursorState_e state_;
     float size_;
     float sensitivity_;
+
 
 public:
     explicit Cursor(QObject *parent = 0);
     const GLfloat* getColorFromState() const;
     float getSize() const;
     const Leap::Vector getPos() const;
+    const Leap::Vector getPos(const Leap::Vector& pos) const;
 
 signals:
 

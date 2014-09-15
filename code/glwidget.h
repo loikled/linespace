@@ -67,7 +67,7 @@ private:
 
     Leap::Vector palmPos_;
     Leap::Vector lastFingerPos;
-    QList<Shape::line_t> lineList_;
+    QList<Shape> shapeList_;
     HandEvent::Selection_t selectionMode_;
     float boxSize_;
     int gridSize_;
@@ -113,7 +113,7 @@ private:
     void handleGrab();
     void customEvent(QEvent* pEvent);
     void drawGrid();
-    void drawCurve(const QList<Shape::line_t>&);
+    void drawCurve(const Shape shape);
     void drawCursor();
     void drawCylinder(Leap::Vector point1, Leap::Vector point2);
     void drawFocus();

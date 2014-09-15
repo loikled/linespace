@@ -52,7 +52,6 @@ GlWidget::GlWidget(QWidget *parent) :
     palmPos_.z = 5.0f;
 
     //setCursor(Qt::BlankCursor);
-    lineList_.clear();
 }
 
 GlWidget::~GlWidget()
@@ -69,8 +68,6 @@ void GlWidget::initializeGL()
     lastElapsedTime_ = recordTimer_.elapsed();
 
     // Just display the drawing even without any drawing yet
-    Shape::line_t line(Leap::Vector(0.0,0.0,0.0),Leap::Vector(0.0,0.0,0.0),0);
-    lineList_.append(line);
 
     glEnable(GL_TEXTURE_2D);
 
@@ -84,7 +81,6 @@ void GlWidget::initializeGL()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_MULTISAMPLE);
 
-    shape_.newType(3);
 }
 
 void GlWidget::resizeGL(int width, int height)
@@ -127,11 +123,13 @@ void GlWidget::paintGL()
     drawGrid();
 
     // Objects
-    //drawCurve(shape_.getList());
+    drawCurve(shape_);
     drawCursor();
     drawFocus();
-    drawCurve(lineList_);
-
+    foreach(Shape shape, shapeList_)
+    {
+        drawCurve(shape);
+    }
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -182,77 +180,20 @@ void GlWidget::setNewTime(int time)
     lastElapsedTime_ = recordTimer_.elapsed();
 }
 
-void GlWidget::drawCylinder(Leap::Vector point1,Leap::Vector point2)
-{
+
+void GlWidget::drawCurve(const Shape shape){
+
     glDisable(GL_LIGHTING);
-    /*
-    GLUquadric* quad = gluNewQuadric();
-    gluQuadricOrientation(quad, GLU_OUTSIDE);
-    //glusphere draws always at 0,0 so we change the model draw space
-
-    glPushMatrix();
-
-    glTranslatef(point1.x, point1.y, point1.z);
-
-    float adj = point2.z-point1.z;
-    if(adj != 0)
-    {
-        if(adj > 0)
-            glRotatef(-atan((point2.x-point1.x)/adj)*180/PI,0,1,0);
-        else
-            glRotatef(atan((point2.x-point1.x)/adj)*180/PI,0,1,0);
-
-    }
-    float adj2 = sqrt((point2.z-point1.z)*(point2.z-point1.z)+(point2.x-point1.x)*(point2.x-point1.x));
-    if(adj2 != 0)
-    {
-        if(adj2 > 0)
-            glRotatef(180+atan((point2.y-point1.y)/adj2)*180/PI,1, 0, 0);
-        else
-            glRotatef(-atan((point2.y-point1.y)/adj2)*180/PI,1, 0, 0);
-    }
-    //if(point2.x != 0)
-      //  glRotatef(point2.angleTo(Leap::Vector(0,0,1))*180/PI,0,0,1);
-
-    gluCylinder(quad, 0.005, 0.005, point1.distanceTo(point2), 30, 30);
-    glPopMatrix();
-    gluDeleteQuadric(quad);
-    */
-
     glColor4f(1.0, 0.0, 0.0, 0.5);
-
     glLineWidth(4);
     glBegin(GL_LINES);
 
-    glVertex3f(point1.x, point1.y, point1.z);
-    glVertex3f(point2.x, point2.y, point2.z);
+    foreach (Shape::line_t line, shape.getList()) {
+        glVertex3f(line.firstPoint_.x, line.firstPoint_.y, line.firstPoint_.z);
+        glVertex3f(line.secondPoint_.x, line.secondPoint_.y, line.secondPoint_.z);
+    }
     glEnd();
-
     glEnable(GL_LIGHTING);
-}
-
-void GlWidget::drawCurve(const QList<Shape::line_t>& list){
-    if(recording_ or (playing_ && (curentRecordTime_+ recordTimer_.elapsed() - lastElapsedTime_) < maxRecordTimer_))
-    {
-        curentRecordTime_ += (recordTimer_.elapsed() - lastElapsedTime_);
-        lastElapsedTime_ = recordTimer_.elapsed();
-    }
-
-    foreach (Shape::line_t line, list) {
-
-        if(line.timePainted_> curentRecordTime_)
-        {
-            continue;
-        }
-        drawCylinder(line.firstPoint_,line.secondPoint_);
-    }
-
-    if(maxRecordTimer_ < curentRecordTime_)
-    {
-        maxRecordTimer_ = curentRecordTime_;
-    }
-    emit setTimeAndTotalTime(curentRecordTime_,maxRecordTimer_);
-
 }
 
 void GlWidget::drawGrid(){
@@ -337,10 +278,12 @@ void GlWidget::drawCursor(){
     glColor4fv(color);
     Leap::Vector pos = cursor_.getPos();
     float size = cursor_.getSize();
+    float lineSize = 4*size;
     Cursor::CursorMode_e mode = cursor_.getMode();
 
     GLUquadric* quad = gluNewQuadric();//for drawing a sphere
     Shape circle;
+    Shape line;
     switch(mode){
         case Cursor::CURVE:
             gluQuadricOrientation(quad, GLU_OUTSIDE);
@@ -355,11 +298,14 @@ void GlWidget::drawCursor(){
             circle.newType(Shape::CIRCLE);
             circle.changeCircleCenter(pos);
             circle.changeCircleSize(size);
-            drawCurve(circle.getList());
+            drawCurve(circle);
             break;
 
         case Cursor::SEGMENT:
-             drawCylinder(pos, Leap::Vector(pos.x + size, pos.y + size, pos.z + size));
+             line.newType(Shape::LINE);
+             line.changeLeft(Leap::Vector(pos.x + lineSize, pos.y + lineSize, pos.z + lineSize));
+             line.changeRight(Leap::Vector(pos.x - lineSize, pos.y - lineSize, pos.z - lineSize));
+             drawCurve(line);
              break;
     default:
             break;
@@ -408,7 +354,7 @@ void GlWidget::drawFocus(){
 }
 
 void GlWidget::clearCurves(){
-    lineList_.clear();
+    shapeList_.clear();
 }
 
 /*
@@ -488,12 +434,6 @@ void GlWidget::customEvent(QEvent* pEvent)
             //update cursor to our coordinates
             cursor_.slotMove(event->pos());
             fingerPos = cursor_.getPos();
-            if(event->writing() && cursor_.getMode() == Cursor::CURVE) //thumb closed
-            {
-                Shape::line_t line(lastFingerPos, fingerPos, curentRecordTime_);
-                lineList_.append(line);
-            }
-            lastFingerPos = fingerPos;
             break;
 
        case HandEvent::Circle:
@@ -519,7 +459,7 @@ void GlWidget::customEvent(QEvent* pEvent)
                 curentRecordTime_ = newCurrentRecordTime;
             }
             */
-
+/*
             if(abs(event->sliderAngle()) < 40)
             {
                 float newDist = event->sliderAngle()/10;
@@ -557,7 +497,7 @@ void GlWidget::customEvent(QEvent* pEvent)
                     cam_.setFocusIndex(index);
                 }
 
-            }
+            }*/
             break;
         case HandEvent::Pinch:
             if(isPinchLeft_ && isPinchRight_ && !newShape_)

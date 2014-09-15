@@ -23,10 +23,8 @@ public:
     struct line_t {
         Leap::Vector firstPoint_;
         Leap::Vector secondPoint_;
-        int timePainted_;
         //constructor
-        line_t(Leap::Vector firstPoint, Leap::Vector secondPoint, int timePainted){firstPoint_ = firstPoint;secondPoint_ = secondPoint;timePainted_ = timePainted;}
-        line_t(Leap::Vector firstPoint, Leap::Vector secondPoint){firstPoint_ = firstPoint;secondPoint_ = secondPoint;timePainted_ = 0;}
+        line_t(Leap::Vector firstPoint, Leap::Vector secondPoint){firstPoint_ = firstPoint;secondPoint_ = secondPoint;}
     };
 
     Shape();

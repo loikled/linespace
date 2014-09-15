@@ -47,7 +47,7 @@ GlWidget::GlWidget(QWidget *parent) :
     palmPos_.y = 0.0f;
     palmPos_.z = 5.0f;
 
-    //setCursor(Qt::BlankCursor);
+    setCursor(Qt::BlankCursor);
 }
 
 GlWidget::~GlWidget()
@@ -121,10 +121,7 @@ void GlWidget::paintGL()
     drawCurve(shape_);
     drawCursor();
     drawFocus();
-    foreach(Shape shape, shapeList_)
-    {
-        drawCurve(shape);
-    }
+    drawShapes();
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -142,11 +139,10 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 }
 
-
-void GlWidget::drawCurve(const Shape shape){
+void GlWidget::drawCurve(const Shape shape, float r, float g,  float b, float a){
 
     glDisable(GL_LIGHTING);
-    glColor4f(1.0, 0.0, 0.0, 0.5);
+    glColor4f(r,g,b,a);
     glLineWidth(4);
     glBegin(GL_LINES);
 
@@ -156,6 +152,19 @@ void GlWidget::drawCurve(const Shape shape){
     }
     glEnd();
     glEnable(GL_LIGHTING);
+}
+
+void GlWidget::drawShapes(){
+    int highlight = closestShapeIndex();
+    for(int i=0; i < shapeList_.size(); i++){
+        if (highlight == i)
+        {
+            drawCurve(shapeList_[i], 0,1,0,1); //highlight color is green
+        }else{
+            drawCurve(shapeList_[i]);
+        }
+    }
+
 }
 
 void GlWidget::drawGrid(){
@@ -366,6 +375,24 @@ void GlWidget::updateShape(){
     }
 }
 
+int GlWidget::closestShapeIndex(float treshold){
+    Leap::Vector pos = cursor_.getPos();
+    float min = treshold; //must be close enough to something
+    int index = -1;
+    for(int i = 0; i < shapeList_.size(); ++i){
+
+        Shape s = shapeList_[i];
+        for(Shape::line_t l : s.getList()){
+            float dist = pos.distanceTo(l.firstPoint_);
+            if (dist < min){
+                min = dist;
+                index = i;
+            }
+        }
+    }
+    return index;
+}
+
 /*
 //find the closest cube from the palm center
 int GlWidget::closestItem(float pTreshold)
@@ -402,7 +429,6 @@ int GlWidget::closestItem(float pTreshold)
 void GlWidget::customEvent(QEvent* pEvent)
 {
     Leap::Vector fingerPos;
-    int newCurrentRecordTime;
     HandEvent* event = dynamic_cast<HandEvent*>(pEvent);  
     if ( event )
     {

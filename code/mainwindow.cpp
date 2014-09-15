@@ -45,44 +45,9 @@ void mainwindow::init(void)
 
     // View and slider layout
     QVBoxLayout* vlayout = new QVBoxLayout();
-    slider_ = new QSlider();
-    // to increase slider precision
-    slider_->setMaximum(1000);
-    connect(slider_, SIGNAL(sliderMoved(int)), this, SLOT(slotSliderMoved(int)));
-    slider_->setOrientation(Qt::Horizontal);
-
-    textBlock = new QLineEdit();
-    textBlock->setMaximumWidth(200);
-
-    QHBoxLayout* hSliderLayout = new QHBoxLayout();
-
-    hSliderLayout->addWidget(slider_);
-    hSliderLayout->addWidget(textBlock);
 
     vlayout->addWidget(glView_);
-    vlayout->addItem(hSliderLayout);
     hLayout->addItem(vlayout);
-
-    // Record and play drawing
-    QPushButton* button = new QPushButton("Record");
-    connect(button, SIGNAL(clicked()), this, SLOT(slotRecord()));
-    QPushButton* button2 = new QPushButton("Stop");
-    connect(button2, SIGNAL(clicked()), this, SLOT(slotStop()));
-    QPushButton* button3 = new QPushButton("Play");
-    connect(button3, SIGNAL(clicked()), this, SLOT(slotPlay()));
-    button->setMaximumWidth(80);
-    button2->setMaximumWidth(80);
-    button3->setMaximumWidth(80);
-
-
-    connect(glView_,SIGNAL(setTimeAndTotalTime(int,int)),this,SLOT(slotSetTimings(int,int)));
-
-    QVBoxLayout* buttonLayout = new QVBoxLayout();
-    buttonLayout->addWidget(button);
-    buttonLayout->addWidget(button2);
-    buttonLayout->addWidget(button3);
-
-    //hLayout->addItem(buttonLayout);
 
     QMenu* menu = menuBar()->addMenu("&Display");
     QAction* actionStart = new QAction("Start/Stop", this);
@@ -113,40 +78,12 @@ void mainwindow::init(void)
     glView_->setFocus();
 }
 
-void mainwindow::slotSliderMoved(int value)
-{
-    glView_->setNewTime(value);
-}
-
-void mainwindow::slotRecord()
-{
-    glView_->startRecord();
-}
-void mainwindow::slotStop()
-{
-    glView_->stopRecord();
-}
-void mainwindow::slotPlay()
-{
-    glView_->play();
-}
-
 void mainwindow::slotStart()
 {
     if (timer_->isActive())
         timer_->stop();
     else
         timer_->start(DELAY_FPS);
-}
-void mainwindow::slotSetTimings(int currentTime, int totalTime)
-{
-    //to modifie
-    if(totalTime != 0)
-    {
-        slider_->setSliderPosition(currentTime*1000/totalTime);
-    }
-    textBlock->clear();
-    textBlock->insert(setTimeFromInt(currentTime)->toString("hh:mm:ss:zzz") + " / " + setTimeFromInt(totalTime)->toString("hh:mm:ss:zzz"));
 }
 
 QTime* mainwindow::setTimeFromInt(int intTime)
@@ -182,7 +119,6 @@ QTime* mainwindow::setTimeFromInt(int intTime)
     time->setHMS(hour,min,sec,msec);
     return time;
 }
-
 
 void mainwindow::slotGetNewFrame()
 {

@@ -29,9 +29,17 @@ Cursor::CursorMode_e Cursor::getMode() const{
     return mode_;
 }
 
+Cursor::CursorState_e Cursor::getState() const{
+    return state_;
+}
+
 const Leap::Vector Cursor::getPos(const Leap::Vector& pos) const{
     Leap::Vector offset(-0.5f, -0.5f, -1.0f);
     return (pos + offset)*sensitivity_;
+}
+
+Shape::line_t Cursor::getLastMove(){
+    return Shape::line_t(lastFingerPos_, pos_);
 }
 
 float Cursor::getSize() const{
@@ -44,10 +52,11 @@ void Cursor::slotMove(const Leap::Vector& pos){
     //we want to center on 0,0 and Z in range [-1, 0]
     Leap::Vector offset(-0.5f, -0.5f, -1.0f);
     pos_ = (pos + offset)*sensitivity_;
+    lastFingerPos_ = pos_;
 }
 
-void Cursor::slotChangeState(Cursor::CursorMode_e mode){
-    mode_ = mode;
+void Cursor::slotChangeState(Cursor::CursorState_e state){
+    state_ = state;
 }
 
 void Cursor::slotNextMode(){

@@ -147,39 +147,6 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 }
 
-// record functions
-void GlWidget::startRecord()
-{
-    playing_ = false;
-    recording_ = true;
-    recordTimer_.restart();
-    lastElapsedTime_ = recordTimer_.elapsed();
-    cursor_.slotChangeState(Cursor::CURVE);
-}
-
-void GlWidget::stopRecord()
-{
-    recording_ = false;
-    playing_ = false;
-    cursor_.slotChangeState(Cursor::IDLE);
-}
-
-void GlWidget::play()
-{
-    recording_ = false;
-    playing_ = true;
-    curentRecordTime_ = 0;
-    recordTimer_.restart();
-    lastElapsedTime_ = recordTimer_.elapsed();
-}
-
-void GlWidget::setNewTime(int time)
-{
-    curentRecordTime_ = (time*maxRecordTimer_)/1000;
-    recordTimer_.restart();
-    lastElapsedTime_ = recordTimer_.elapsed();
-}
-
 
 void GlWidget::drawCurve(const Shape shape){
 
@@ -355,6 +322,47 @@ void GlWidget::drawFocus(){
 
 void GlWidget::clearCurves(){
     shapeList_.clear();
+}
+
+void GlWidget::updateShape(){
+    Cursor::CursorMode_e mode = cursor_.getMode();
+    Cursor::CursorState_e state = cursor_.getState();
+
+    switch(mode){
+        case Cursor::CURVE:
+            switch(state){
+                case Cursor::STATE1: //hand opened
+                    break;
+                case Cursor::STATE2: //thumb closed
+                    //Shape::line_t l = cursor_.getLastMove();
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case Cursor::SEGMENT:
+            switch(state){
+                case Cursor::STATE1:
+                    break;
+                case Cursor::STATE2:
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case Cursor::CIRCLE:
+            switch(state){
+                case Cursor::STATE1:
+                    break;
+                case Cursor::STATE2:
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
 }
 
 /*

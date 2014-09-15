@@ -40,11 +40,6 @@ signals:
 
 public slots:
     void slotStart();
-    void slotRecord();
-    void slotStop();
-    void slotPlay();
-    void slotSliderMoved(int value);
-    void slotSetTimings(int currentTime, int totalTime);
 
 private slots:
    void slotGetNewFrame();

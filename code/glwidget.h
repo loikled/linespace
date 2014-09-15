@@ -50,17 +50,7 @@ private:
 
     GLuint texture_[NB_TEXTURE];
 
-    //record and display timer and maxValueTimer
-    QTime recordTimer_;
-    int maxRecordTimer_;
-    int curentRecordTime_;
-    int lastElapsedTime_;
-    bool recording_;
-    bool playing_;
     Shape shape_;
-    bool isPinchRight_ = false;
-    bool isPinchLeft_ = false;
-    bool newShape_ = false;
 
     Cam cam_;
     Cursor cursor_;

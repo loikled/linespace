@@ -1,4 +1,5 @@
 #include "cursor.h"
+#include "qdebug.h"
 
 const GLfloat Cursor::colors_[5][4] = {
     {1.0, 1.0, 1.0, 0.8},
@@ -13,7 +14,8 @@ Cursor::Cursor(QObject *parent) :
     pos_(Leap::Vector()),
     mode_(Cursor::CURVE),
     size_(0.02f),
-    sensitivity_(2.0f)
+    sensitivity_(2.0f),
+    state_(0)
 {
 }
 
@@ -29,7 +31,7 @@ Cursor::CursorMode_e Cursor::getMode() const{
     return mode_;
 }
 
-Cursor::CursorState_e Cursor::getState() const{
+int Cursor::getState() const{
     return state_;
 }
 
@@ -38,7 +40,8 @@ const Leap::Vector Cursor::getPos(const Leap::Vector& pos) const{
     return (pos + offset)*sensitivity_;
 }
 
-Shape::line_t Cursor::getLastMove(){
+Shape::line_t Cursor::getLastMove()
+{
     return Shape::line_t(lastFingerPos_, pos_);
 }
 
@@ -51,11 +54,13 @@ void Cursor::slotMove(const Leap::Vector& pos){
     //Leap normalized is in range [0..1]
     //we want to center on 0,0 and Z in range [-1, 0]
     Leap::Vector offset(-0.5f, -0.5f, -1.0f);
-    pos_ = (pos + offset)*sensitivity_;
     lastFingerPos_ = pos_;
+    pos_ = (pos + offset)*sensitivity_;
+
 }
 
-void Cursor::slotChangeState(Cursor::CursorState_e state){
+void Cursor::changeState(int state)
+{
     state_ = state;
 }
 
@@ -77,4 +82,6 @@ void Cursor::slotNextMode(){
             mode_ = CURVE;
             break;
    }
+    state_ = 0;
+
 }

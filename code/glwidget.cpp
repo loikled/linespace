@@ -252,8 +252,7 @@ void GlWidget::drawCursor(){
     Cursor::CursorMode_e mode = cursor_.getMode();
 
     GLUquadric* quad = gluNewQuadric();//for drawing a sphere
-    Shape circle;
-    Shape line;
+    Shape shape;
     switch(mode){
         case Cursor::CURVE:
             gluQuadricOrientation(quad, GLU_OUTSIDE);
@@ -265,17 +264,17 @@ void GlWidget::drawCursor(){
             break;
 
         case Cursor::CIRCLE:
-            circle.newType(Shape::CIRCLE);
-            circle.changeCircleCenter(pos);
-            circle.changeCircleSize(size);
-            drawCurve(circle);
+            shape.newType(Shape::CIRCLE);
+            shape.changeCircleCenter(pos);
+            shape.changeCircleSize(size);
+            drawCurve(shape);
             break;
 
         case Cursor::SEGMENT:
-             line.newType(Shape::LINE);
-             line.changeLeft(Leap::Vector(pos.x + lineSize, pos.y + lineSize, pos.z + lineSize));
-             line.changeRight(Leap::Vector(pos.x - lineSize, pos.y - lineSize, pos.z - lineSize));
-             drawCurve(line);
+             shape.newType(Shape::LINE);
+             shape.changeLeft(Leap::Vector(pos.x + lineSize, pos.y + lineSize, pos.z + lineSize));
+             shape.changeRight(Leap::Vector(pos.x - lineSize, pos.y - lineSize, pos.z - lineSize));
+             drawCurve(shape);
              break;
     default:
             break;
@@ -350,9 +349,19 @@ void GlWidget::updateShape(){
             break;
         case Cursor::SEGMENT:
             switch(state){
+                case Cursor::IDLE:
+                    shape_.newType(Shape::LINE);
+                    break;
                 case Cursor::STATE1:
+                    shape_.changeLeft(cursor_.getPos());
+                    shape_.changeRight(cursor_.getPos());
                     break;
                 case Cursor::STATE2:
+                    shape_.changeRight(cursor_.getPos());
+                    break;
+                case Cursor::STORE:
+                    shapeList_.append(shape_);
+                    cursor_.changeState(Cursor::IDLE);
                     break;
                 default:
                     break;

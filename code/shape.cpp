@@ -13,7 +13,7 @@ void Shape::newType(int type)
 
         break;
         case Shape::LINE :
-            lineList_.append(line_t(Leap::Vector(-0.25,0,0),Leap::Vector(0.25,0,0)));
+            //lineList_.append(line_t(Leap::Vector(-0.25,0,0),Leap::Vector(0.25,0,0)));
         break;
 
         case Shape::CIRCLE :
@@ -66,20 +66,22 @@ void Shape::createHelicoide()
 
 void Shape::changeLeft(Leap::Vector left)
 {
+    Leap::Vector right = Leap::Vector::zero();
     if(lineList_.length()>0){
-        Leap::Vector right = lineList_[0].secondPoint_;
+        right = lineList_[0].secondPoint_;
+    }
         lineList_.clear();
         lineList_.append(line_t(left,right));
-    }
 }
 
 void Shape::changeRight(Leap::Vector right)
 {
+    Leap::Vector left = Leap::Vector::zero();
     if(lineList_.length()>0){
-        Leap::Vector left = lineList_[0].firstPoint_;
+      left = lineList_[0].firstPoint_;
+    }
         lineList_.clear();
         lineList_.append(line_t(left,right));
-    }
 }
 
 void Shape::changeCircleSize(float size)

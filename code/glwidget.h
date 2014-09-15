@@ -108,19 +108,21 @@ public:
                   float pSize);
     void drawCube(const item_t& pCube);
     void clearCurves();
+    int closestShapeIndex(float treshold = 0.1f);
 
 private:
     void handleGrab();
     void customEvent(QEvent* pEvent);
     void drawGrid();
-    void drawCurve(const Shape shape);
+    void drawCurve(const Shape shape, float r = 1.0f, float g = 0,  float b = 0, float a = 0.8f);
     void drawCursor();
     void drawCylinder(Leap::Vector point1, Leap::Vector point2);
     void drawFocus();
     void updateShape();
+    void drawShapes();
 
 signals:
-    void setTimeAndTotalTime(int currentTime, int totalTime);
+    //void setTimeAndTotalTime(int currentTime, int totalTime);
 
 public slots:
     void slotNewHead(head_t pPos);

@@ -16,6 +16,8 @@ public:
         CIRCLE = 1
     } Shape_t;
 
+
+public:
     struct line_t {
         Leap::Vector firstPoint_;
         Leap::Vector secondPoint_;
@@ -33,7 +35,8 @@ public:
     void changeCircleCenter(Leap::Vector center);
     void changeCircleDirection(Leap::Vector direction);
     void changeCircleNormal(Leap::Vector normal);
-    void setCircle(int nbSegment);
+    void createCircle();
+    void createHelicoide();
     const QList<line_t> getList() const;
 
 private:
@@ -41,6 +44,11 @@ private:
     Leap::Vector center_;
     Leap::Vector direction_;
     Leap::Vector normal_;
+    int nbSegment_ = 1;
+    float length_ = 0.5;
+    int step_ = 1;
+    // angle in degre
+    float HelicoideAngle_ = 0;
     float size_;
 
 };

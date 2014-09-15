@@ -176,7 +176,7 @@ void LeapListener::detectGesture(const Frame& pFrame)
         case Gesture::TYPE_INVALID:
             break;
         case Gesture::TYPE_KEY_TAP:
-            if ( gest.hands()[0].id() == rightHand_ )
+            if ( gest.hands().rightmost().isRight())
                 clickEvent();
             break;
         case Gesture::TYPE_SWIPE:
@@ -301,7 +301,7 @@ void LeapListener::moveEvent()
     {
         HandEvent* event = 0;
         event = new HandEvent(HandEvent::Moved, fingerPos_);
-        event->writting(writing_);
+        event->writing(writing_);
         QApplication::postEvent(receiver_, event);
     }
 }

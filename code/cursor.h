@@ -10,23 +10,27 @@ class Cursor : public QObject
     Q_OBJECT
 
 public:
-    typedef enum {IDLE = 0,
+    typedef enum {
                   CURVE = 1,
                   CIRCLE = 2,
                   SEGMENT = 3,
                   EDIT = 4,
                   LAST} CursorMode_e;
-    typedef enum {
-        MOVE = 0,
-        CHANGE = 1
 
-    } CursorStep_e;
+    typedef enum {
+        IDLE = 0,
+        STATE1 = 1,
+        STATE2 = 2
+    } CursorState_e;
+
 private:
     static const GLfloat colors_[5][4];
     Leap::Vector pos_;
 
     // correspond to both pinch left and right hand
     CursorMode_e mode_;
+    CursorState_e state_;
+
     float size_;
     float sensitivity_;
 
@@ -43,7 +47,7 @@ signals:
 
 public slots:
     void slotMove(const Leap::Vector& pos);
-    void slotChangeState(Cursor::CursorMode_e mode);
+    void slotChangeState(Cursor::CursorState_e mode);
     void slotNextMode();
 
 };

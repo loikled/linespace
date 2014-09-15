@@ -46,8 +46,8 @@ void Cursor::slotMove(const Leap::Vector& pos){
     pos_ = (pos + offset)*sensitivity_;
 }
 
-void Cursor::slotChangeState(Cursor::CursorMode_e mode){
-    mode_ = mode;
+void Cursor::slotChangeState(Cursor::CursorState_e state){
+    state_ = state;
 }
 
 void Cursor::slotNextMode(){

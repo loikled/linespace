@@ -131,7 +131,6 @@ void GlWidget::paintGL()
     drawCursor();
     drawFocus();
     drawCurve(lineList_);
-
 }
 
 //helper function, loads a texture and assign it to an enum value
@@ -147,39 +146,6 @@ void GlWidget::loadTexture(QString textureName, texId_t pId)
     glTexImage2D( GL_TEXTURE_2D, 0, 3, qim_Texture.width(), qim_Texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, qim_Texture.bits() );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-}
-
-// record functions
-void GlWidget::startRecord()
-{
-    playing_ = false;
-    recording_ = true;
-    recordTimer_.restart();
-    lastElapsedTime_ = recordTimer_.elapsed();
-    cursor_.slotChangeState(Cursor::CURVE);
-}
-
-void GlWidget::stopRecord()
-{
-    recording_ = false;
-    playing_ = false;
-    cursor_.slotChangeState(Cursor::IDLE);
-}
-
-void GlWidget::play()
-{
-    recording_ = false;
-    playing_ = true;
-    curentRecordTime_ = 0;
-    recordTimer_.restart();
-    lastElapsedTime_ = recordTimer_.elapsed();
-}
-
-void GlWidget::setNewTime(int time)
-{
-    curentRecordTime_ = (time*maxRecordTimer_)/1000;
-    recordTimer_.restart();
-    lastElapsedTime_ = recordTimer_.elapsed();
 }
 
 void GlWidget::drawCylinder(Leap::Vector point1,Leap::Vector point2)

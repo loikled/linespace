@@ -30,7 +30,8 @@ public:
     void changeCircleCenter(Leap::Vector center);
     void changeCircleDirection(Leap::Vector direction);
     void changeCircleNormal(Leap::Vector normal);
-    void setCircle(int nbSegment);
+    void createCircle();
+    void createHelicoide();
     QList<line_t> getList();
 
 private:
@@ -38,6 +39,11 @@ private:
     Leap::Vector center_;
     Leap::Vector direction_;
     Leap::Vector normal_;
+    int nbSegment_ = 1;
+    float length_ = 0.5;
+    int step_ = 1;
+    // angle in degre
+    float HelicoideAngle_ = 0;
     float size_;
 
 };

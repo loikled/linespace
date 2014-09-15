@@ -84,7 +84,7 @@ void GlWidget::initializeGL()
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glEnable(GL_MULTISAMPLE);
 
-    shape_.newType(1);
+    shape_.newType(3);
 }
 
 void GlWidget::resizeGL(int width, int height)

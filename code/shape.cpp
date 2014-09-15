@@ -1,10 +1,5 @@
 #include "shape.h"
 
-#define LINE  0
-#define CIRCLE 1
-
-
-
 Shape::Shape()
 {
 }
@@ -26,6 +21,7 @@ void Shape::newType(int type)
         nbSegment_ = 150;
         createCircle();
         break;
+
     default :
         break;
     }
@@ -34,8 +30,6 @@ void Shape::newType(int type)
 void Shape::createCircle()
 {
     lineList_.clear();
-    Leap::Vector* vectNull = new Leap::Vector(0,0,0);
-
     float angle = 2*PI/nbSegment_;
    for(int i = 0; i<nbSegment_;i++)
    {

@@ -13,7 +13,9 @@ class Shape
 public:
     typedef enum {
         LINE = 0,
-        CIRCLE = 1
+        CIRCLE = 1,
+        HELICOIDE = 2,
+        POLYGON = 3
     } Shape_t;
 
 

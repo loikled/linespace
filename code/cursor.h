@@ -54,7 +54,6 @@ public:
     Leap::Vector leftPinchPosition_;
     Leap::Vector rightPinchPosition_;
 
-
 signals:
 
 public slots:

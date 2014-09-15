@@ -117,7 +117,6 @@ void GlWidget::paintGL()
     drawGrid();
 
     // Objects
-    updateShape();
     drawCurve(shape_);
     drawCursor();
     drawFocus();
@@ -339,7 +338,6 @@ void GlWidget::updateShape(){
                         shape_.newType(Shape::CURVE);
                     break;
                 case Cursor::STATE1:
-                        qDebug() << shape_.getList().size();
                         shape_.addLine(cursor_.getLastMove());
                     break;
                 case Cursor::STATE2:
@@ -362,6 +360,10 @@ void GlWidget::updateShape(){
             break;
         case Cursor::CIRCLE:
             switch(state){
+                case Cursor::IDLE :
+
+
+                    break;
                 case Cursor::STATE1:
                     break;
                 case Cursor::STATE2:
@@ -478,6 +480,7 @@ void GlWidget::customEvent(QEvent* pEvent)
             break;
 
        case HandEvent::Circle:
+
             break;
 
        case HandEvent::Slider:
@@ -563,6 +566,8 @@ void GlWidget::customEvent(QEvent* pEvent)
             break;
         }
     }
+
+    updateShape();
 }
 
 //update the camera position

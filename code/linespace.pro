@@ -29,7 +29,7 @@ LIBS += -lopencv_video
 LIBS += -lGLU
 
 #leapmotion lib
-INCLUDEPATH += /usr/local/include/leapmotion
+#INCLUDEPATH += /usr/local/include/leapmotion
 LIBS += -lLeap
 
 SOURCES += main.cpp \

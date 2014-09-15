@@ -10,9 +10,12 @@ using namespace Leap;
 class Shape
 {
 
-
-
 public:
+    typedef enum {
+        LINE = 0,
+        CIRCLE = 1
+    } Shape_t;
+
     struct line_t {
         Leap::Vector firstPoint_;
         Leap::Vector secondPoint_;
@@ -31,7 +34,7 @@ public:
     void changeCircleDirection(Leap::Vector direction);
     void changeCircleNormal(Leap::Vector normal);
     void setCircle(int nbSegment);
-    QList<line_t> getList();
+    const QList<line_t> getList() const;
 
 private:
     QList<line_t>  lineList_;

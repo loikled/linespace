@@ -19,14 +19,14 @@ Vector HandEvent::pos()
     return pos_;
 }
 
-bool HandEvent::writting()
+bool HandEvent::writing()
 {
-    return writting_;
+    return writing_;
 }
 
-void HandEvent::writting(bool isWritting)
+void HandEvent::writing(bool isWriting)
 {
-    writting_ = isWritting;
+    writing_ = isWriting;
 }
 
 int HandEvent::item()

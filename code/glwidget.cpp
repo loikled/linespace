@@ -127,11 +127,9 @@ void GlWidget::paintGL()
     drawGrid();
 
     // Objects
-
-
-
-    drawCurve(shape_.getList());
+    //drawCurve(shape_.getList());
     drawCursor();
+    drawFocus();
     drawCurve(lineList_);
 
 }
@@ -158,7 +156,7 @@ void GlWidget::startRecord()
     recording_ = true;
     recordTimer_.restart();
     lastElapsedTime_ = recordTimer_.elapsed();
-    cursor_.slotChangeState(Cursor::DRAW);
+    cursor_.slotChangeState(Cursor::CURVE);
 }
 
 void GlWidget::stopRecord()
@@ -233,7 +231,7 @@ void GlWidget::drawCylinder(Leap::Vector point1,Leap::Vector point2)
     glEnable(GL_LIGHTING);
 }
 
-void GlWidget::drawCurve(QList<Shape::line_t> list){
+void GlWidget::drawCurve(const QList<Shape::line_t>& list){
     if(recording_ or (playing_ && (curentRecordTime_+ recordTimer_.elapsed() - lastElapsedTime_) < maxRecordTimer_))
     {
         curentRecordTime_ += (recordTimer_.elapsed() - lastElapsedTime_);
@@ -334,17 +332,39 @@ void GlWidget::drawCube(const item_t& pCube)
 
 void GlWidget::drawCursor(){
     glDisable(GL_LIGHTING);
-    GLUquadric* quad = gluNewQuadric();
-    gluQuadricOrientation(quad, GLU_OUTSIDE);
+
     const GLfloat* color = cursor_.getColorFromState();
     glColor4fv(color);
     Leap::Vector pos = cursor_.getPos();
     float size = cursor_.getSize();
-    //glusphere draws always at 0,0 so we change the model draw space
-    glPushMatrix();
-    glTranslatef(pos.x, pos.y, pos.z);
-    gluSphere(quad, size , 100, 100);
-    glPopMatrix();
+    Cursor::CursorMode_e mode = cursor_.getMode();
+
+    GLUquadric* quad = gluNewQuadric();//for drawing a sphere
+    Shape circle;
+    switch(mode){
+        case Cursor::CURVE:
+            gluQuadricOrientation(quad, GLU_OUTSIDE);
+            //glusphere draws always at 0,0 so we change the model draw space
+            glPushMatrix();
+            glTranslatef(pos.x, pos.y, pos.z);
+            gluSphere(quad, size , 100, 100);
+            glPopMatrix();
+            break;
+
+        case Cursor::CIRCLE:
+            circle.newType(Shape::CIRCLE);
+            circle.changeCircleCenter(pos);
+            circle.changeCircleSize(size);
+            drawCurve(circle.getList());
+            break;
+
+        case Cursor::SEGMENT:
+             drawCylinder(pos, Leap::Vector(pos.x + size, pos.y + size, pos.z + size));
+             break;
+    default:
+            break;
+    }
+
     gluDeleteQuadric(quad);
 
     Grid::GridList_t markers = grid_.getMarkers(pos);
@@ -447,6 +467,7 @@ void GlWidget::customEvent(QEvent* pEvent)
         case HandEvent::Closed:
             break;
         case HandEvent::Clicked:
+                cursor_.slotNextMode();
             break;
         case HandEvent::DoubleClicked:
             break;
@@ -467,26 +488,19 @@ void GlWidget::customEvent(QEvent* pEvent)
             //update cursor to our coordinates
             cursor_.slotMove(event->pos());
             fingerPos = cursor_.getPos();
-            if(event->writting())
+            if(event->writing() && cursor_.getMode() == Cursor::CURVE) //thumb closed
             {
                 Shape::line_t line(lastFingerPos, fingerPos, curentRecordTime_);
                 lineList_.append(line);
-                startRecord();
-            }
-            else
-            {
-                stopRecord();
             }
             lastFingerPos = fingerPos;
             break;
-       case HandEvent::Circle:
 
+       case HandEvent::Circle:
             shape_.changeCircleCenter(cursor_.getPos(event->pos()));
             shape_.changeCircleDirection(event->circleDirection_);
             shape_.changeCircleNormal(event->circleNormal_);
             shape_.changeCircleSize(event->circleSize_/100);
-
-
             break;
 
        case HandEvent::Slider:

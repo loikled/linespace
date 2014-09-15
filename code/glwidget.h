@@ -101,7 +101,6 @@ public:
     void paintGL();
 
     void loadTexture(QString textureName, texId_t pId);
-    void drawLine(Leap::Vector firstPoint,Leap::Vector secondPoint);
     void drawCube(texId_t PtextureId,
                   float pCenterX,
                   float pCenterY,
@@ -114,7 +113,7 @@ private:
     void handleGrab();
     void customEvent(QEvent* pEvent);
     void drawGrid();
-    void drawCurve(QList<Shape::line_t>);
+    void drawCurve(const QList<Shape::line_t>&);
     void drawCursor();
     void drawCylinder(Leap::Vector point1, Leap::Vector point2);
     void drawFocus();

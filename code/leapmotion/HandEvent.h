@@ -43,7 +43,7 @@ public:
 
 private:
     Leap::Vector pos_; // index tip position
-    bool writting_ = false;
+    bool writing_ = false;
     int itemSelected_;
     Selection_t selection_;
     float zoomOffset_;
@@ -59,8 +59,8 @@ public:
               Selection_t pSelectMode = SINGLE,
               float pZoom = 0.0f);
     Leap::Vector pos();
-    bool writting();
-    void writting(bool isWritting);
+    bool writing();
+    void writing(bool isWritting);
     float sliderAngle();
     void sliderAngle(float angle);
     bool pinchIsLeft();

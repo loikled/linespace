@@ -1,10 +1,5 @@
 #include "shape.h"
 
-#define LINE  0
-#define CIRCLE 1
-
-
-
 Shape::Shape()
 {
 }
@@ -14,11 +9,11 @@ void Shape::newType(int type)
     lineList_.clear();
     switch(type)
     {
-        case LINE :
+        case Shape::LINE :
             lineList_.append(line_t(Leap::Vector(-0.25,0,0),Leap::Vector(0.25,0,0)));
         break;
 
-        case CIRCLE :
+        case Shape::CIRCLE :
         center_ = Leap::Vector(0,0.1,0);
         direction_ = Leap::Vector(0.4,-0.3,0.1);
         normal_ = Leap::Vector(0,-0.30,0.4);
@@ -85,7 +80,7 @@ void Shape::changeCircleNormal(Leap::Vector normal)
     setCircle(100);
 }
 
-QList<Shape::line_t> Shape::getList()
+const QList<Shape::line_t> Shape::getList() const
 {
     return lineList_;
 }

@@ -142,7 +142,10 @@ void GlWidget::drawCurve(const Shape shape, float r, float g,  float b, float a)
 
     glDisable(GL_LIGHTING);
     glColor4f(r,g,b,a);
-    glLineWidth(4);
+    if (g > r)
+        glLineWidth(8);
+    else
+        glLineWidth(4);
     glBegin(GL_LINES);
 
     foreach (Shape::line_t line, shape.getList()) {
@@ -276,7 +279,10 @@ void GlWidget::drawCursor(){
              shape.changeRight(Leap::Vector(pos.x - lineSize, pos.y - lineSize, pos.z - lineSize));
              drawCurve(shape);
              break;
-    default:
+
+        case Cursor::MOVE:
+             break;
+        default:
             break;
     }
 
@@ -381,6 +387,37 @@ void GlWidget::updateShape(){
                     break;
             }
             break;
+
+        case Cursor::MOVE:
+            switch(state){
+                case Cursor::IDLE:
+                    cursor_.grabbingId_ = closestShapeIndex();
+                    break;
+                case Cursor::STATE1:
+                    {
+                        int id = cursor_.grabbingId_;
+                        if (id >= 0){
+
+                        Shape &s = shapeList_[cursor_.grabbingId_];
+                        Shape::line_t l = cursor_.getLastMove();
+                        Leap::Vector d = l.secondPoint_ - l.firstPoint_;
+                        s.translate(d);
+                        }
+                        else{
+                            cursor_.changeState(Cursor::IDLE);
+                        }
+                    }
+                    break;
+
+                case Cursor::STATE2:
+                    cursor_.changeState(Cursor::IDLE);
+                    break;
+                default:
+                    cursor_.changeState(Cursor::IDLE);
+                    break;
+            }
+            break;
+
         default:
             break;
     }

@@ -117,3 +117,11 @@ const QList<Shape::line_t> Shape::getList() const
 {
     return lineList_;
 }
+
+void Shape::translate(Leap::Vector offset){
+    for(line_t& l : lineList_){
+        l.firstPoint_ += offset;
+        l.secondPoint_ += offset;
+    }
+    center_ += offset;
+}

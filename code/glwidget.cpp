@@ -351,9 +351,19 @@ void GlWidget::updateShape(){
             break;
         case Cursor::SEGMENT:
             switch(state){
+                case Cursor::IDLE:
+                    shape_.newType(Shape::LINE);
+                    cursor_.slotChangeState(Cursor::STATE1);
+                    break;
                 case Cursor::STATE1:
+                    shape_.changeLeft(cursor_.getPos());
                     break;
                 case Cursor::STATE2:
+                    shape_.changeRight(cursor_.getPos());
+                    break;
+                case Cursor::STORE:
+                    shapeList_.append(shape_);
+                    cursor_.slotChangeState(Cursor::IDLE);
                     break;
                 default:
                     break;
@@ -467,7 +477,16 @@ void GlWidget::customEvent(QEvent* pEvent)
        case HandEvent::Moved:
             //update cursor to our coordinates
             cursor_.slotMove(event->pos());
-            fingerPos = cursor_.getPos();
+            if (event->writing())
+            {
+                if(!cursor_.lastThumbClosed_){
+                    cursor_.slotChangeState(cursor_.getState()+1);
+                    cursor_.lastThumbClosed_ = true;
+                }
+             }else{
+                cursor_.lastThumbClosed_ = false;
+            }
+
             break;
 
        case HandEvent::Circle:

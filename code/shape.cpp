@@ -17,10 +17,10 @@ void Shape::newType(int type)
         break;
 
         case Shape::CIRCLE :
-        center_ = Leap::Vector(0,0.1,0);
-        direction_ = Leap::Vector(0.4,-0.3,0.1);
-        normal_ = Leap::Vector(0,-0.30,0.4);
-        size_ = 0.8;
+        center_ = Leap::Vector(0,0,0);
+        direction_ = Leap::Vector(0,0,1);
+        normal_ = Leap::Vector(1,0,0);
+        size_ = 0.2;
         nbSegment_ = 150;
         createCircle();
         break;
@@ -92,6 +92,11 @@ void Shape::changeCircleCenter(Leap::Vector center)
 {
     center_ = center;
     createCircle();
+}
+
+Leap::Vector Shape::getCircleCenter()
+{
+    return center_;
 }
 
 void Shape::changeCircleDirection(Leap::Vector direction)

@@ -330,6 +330,7 @@ void GlWidget::clearCurves(){
 void GlWidget::updateShape(){
     Cursor::CursorMode_e mode = cursor_.getMode();
     int state = cursor_.getState();
+    Leap::Vector normilisedValue;
 
     switch(mode){
         case Cursor::CURVE:
@@ -360,14 +361,31 @@ void GlWidget::updateShape(){
             break;
         case Cursor::CIRCLE:
             switch(state){
-                case Cursor::IDLE :
+            case Cursor::IDLE :
+                break;
+            case Cursor::STATE1:
+                shape_.newType(Shape::CIRCLE);
+                shape_.changeCircleCenter(cursor_.getPos());
+                break;
+            case Cursor::STATE2:
+                shape_.changeCircleSize(cursor_.getPos().distanceTo(shape_.getCircleCenter()));
 
+                break;
+            case 3 :
+                normilisedValue = Leap::Vector(0,(cursor_.getPos() - shape_.getCircleCenter()).y,(cursor_.getPos() - shape_.getCircleCenter()).z);
+                shape_.changeCircleDirection(normilisedValue);
+            break;
 
-                    break;
-                case Cursor::STATE1:
-                    break;
-                case Cursor::STATE2:
-                    break;
+            case 4 :
+                normilisedValue = Leap::Vector((cursor_.getPos() - shape_.getCircleCenter()).x,(cursor_.getPos() - shape_.getCircleCenter()).y,0);
+                shape_.changeCircleNormal(normilisedValue);
+                break;
+            case 5 :
+                break;
+            case 6 :
+                cursor_.changeState(Cursor::IDLE);
+                shapeList_.append(shape_);
+                break;
                 default:
                     break;
             }

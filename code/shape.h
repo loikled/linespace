@@ -36,6 +36,7 @@ public:
     void changeCircleCenter(Leap::Vector center);
     void changeCircleDirection(Leap::Vector direction);
     void changeCircleNormal(Leap::Vector normal);
+    Leap::Vector getCircleCenter();
     void createCircle();
     void createHelicoide();
     void addLine(line_t line);

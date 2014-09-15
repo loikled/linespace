@@ -427,7 +427,6 @@ int GlWidget::closestItem(float pTreshold)
 
 void GlWidget::customEvent(QEvent* pEvent)
 {
-    Leap::Vector fingerPos;
     HandEvent* event = dynamic_cast<HandEvent*>(pEvent);  
     if ( event )
     {
@@ -536,12 +535,6 @@ void GlWidget::customEvent(QEvent* pEvent)
             }*/
             break;
         case HandEvent::Pinch:
-            if(isPinchLeft_ && isPinchRight_ && !newShape_)
-            {
-                shape_.newType(0);
-                newShape_ = true;
-            }
-
             if(event->pinchIsLeft())
             {
                 cursor_.isPinchLeft_  = true;
@@ -568,6 +561,7 @@ void GlWidget::customEvent(QEvent* pEvent)
             break;
         }
     }
+    updateShape();
 }
 
 //update the camera position

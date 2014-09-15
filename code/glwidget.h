@@ -98,7 +98,7 @@ public:
                   float pSize);
     void drawCube(const item_t& pCube);
     void clearCurves();
-    int closestShapeIndex(float treshold = 0.1f);
+    int closestShapeIndex(float treshold = 0.5f);
 
 private:
     void handleGrab();

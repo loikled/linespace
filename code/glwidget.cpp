@@ -142,7 +142,10 @@ void GlWidget::drawCurve(const Shape shape, float r, float g,  float b, float a)
 
     glDisable(GL_LIGHTING);
     glColor4f(r,g,b,a);
-    glLineWidth(4);
+    if (g > r)
+        glLineWidth(8);
+    else
+        glLineWidth(4);
     glBegin(GL_LINES);
 
     foreach (Shape::line_t line, shape.getList()) {
@@ -252,8 +255,7 @@ void GlWidget::drawCursor(){
     Cursor::CursorMode_e mode = cursor_.getMode();
 
     GLUquadric* quad = gluNewQuadric();//for drawing a sphere
-    Shape circle;
-    Shape line;
+    Shape shape;
     switch(mode){
         case Cursor::CURVE:
             gluQuadricOrientation(quad, GLU_OUTSIDE);
@@ -265,19 +267,22 @@ void GlWidget::drawCursor(){
             break;
 
         case Cursor::CIRCLE:
-            circle.newType(Shape::CIRCLE);
-            circle.changeCircleCenter(pos);
-            circle.changeCircleSize(size);
-            drawCurve(circle);
+            shape.newType(Shape::CIRCLE);
+            shape.changeCircleCenter(pos);
+            shape.changeCircleSize(size);
+            drawCurve(shape);
             break;
 
         case Cursor::SEGMENT:
-             line.newType(Shape::LINE);
-             line.changeLeft(Leap::Vector(pos.x + lineSize, pos.y + lineSize, pos.z + lineSize));
-             line.changeRight(Leap::Vector(pos.x - lineSize, pos.y - lineSize, pos.z - lineSize));
-             drawCurve(line);
+             shape.newType(Shape::LINE);
+             shape.changeLeft(Leap::Vector(pos.x + lineSize, pos.y + lineSize, pos.z + lineSize));
+             shape.changeRight(Leap::Vector(pos.x - lineSize, pos.y - lineSize, pos.z - lineSize));
+             drawCurve(shape);
              break;
-    default:
+
+        case Cursor::MOVE:
+             break;
+        default:
             break;
     }
 
@@ -351,9 +356,19 @@ void GlWidget::updateShape(){
             break;
         case Cursor::SEGMENT:
             switch(state){
+                case Cursor::IDLE:
+                    shape_.newType(Shape::LINE);
+                    break;
                 case Cursor::STATE1:
+                    shape_.changeLeft(cursor_.getPos());
+                    shape_.changeRight(cursor_.getPos());
                     break;
                 case Cursor::STATE2:
+                    shape_.changeRight(cursor_.getPos());
+                    break;
+                case Cursor::STORE:
+                    shapeList_.append(shape_);
+                    cursor_.changeState(Cursor::IDLE);
                     break;
                 default:
                     break;
@@ -390,6 +405,37 @@ void GlWidget::updateShape(){
                     break;
             }
             break;
+
+        case Cursor::MOVE:
+            switch(state){
+                case Cursor::IDLE:
+                    cursor_.grabbingId_ = closestShapeIndex();
+                    break;
+                case Cursor::STATE1:
+                    {
+                        int id = cursor_.grabbingId_;
+                        if (id >= 0){
+
+                        Shape &s = shapeList_[cursor_.grabbingId_];
+                        Shape::line_t l = cursor_.getLastMove();
+                        Leap::Vector d = l.secondPoint_ - l.firstPoint_;
+                        s.translate(d);
+                        }
+                        else{
+                            cursor_.changeState(Cursor::IDLE);
+                        }
+                    }
+                    break;
+
+                case Cursor::STATE2:
+                    cursor_.changeState(Cursor::IDLE);
+                    break;
+                default:
+                    cursor_.changeState(Cursor::IDLE);
+                    break;
+            }
+            break;
+
         default:
             break;
     }

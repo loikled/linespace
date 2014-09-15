@@ -41,6 +41,7 @@ public:
     void createHelicoide();
     void addLine(line_t line);
     const QList<line_t> getList() const;
+    void translate(Leap::Vector offset);
 
 private:
     QList<line_t>  lineList_;

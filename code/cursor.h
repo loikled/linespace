@@ -15,7 +15,7 @@ public:
                   CURVE = 1,
                   CIRCLE = 2,
                   SEGMENT = 3,
-                  EDIT = 4,
+                  MOVE = 4,
                   LAST} CursorMode_e;
 
     typedef enum {
@@ -54,6 +54,7 @@ public:
     bool isPinchRight_;
     Leap::Vector leftPinchPosition_;
     Leap::Vector rightPinchPosition_;
+    int grabbingId_ = 0;
 
 signals:
 

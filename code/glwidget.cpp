@@ -430,7 +430,6 @@ int GlWidget::closestItem(float pTreshold)
 
 void GlWidget::customEvent(QEvent* pEvent)
 {
-    Leap::Vector fingerPos;
     HandEvent* event = dynamic_cast<HandEvent*>(pEvent);  
     if ( event )
     {
@@ -566,7 +565,6 @@ void GlWidget::customEvent(QEvent* pEvent)
             break;
         }
     }
-
     updateShape();
 }
 

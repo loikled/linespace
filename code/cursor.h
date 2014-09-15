@@ -21,9 +21,10 @@ public:
     typedef enum {
         IDLE = 0,
         STATE1 = 1,
-        STATE2 = 2
+        STATE2 = 2,
+        STORE
     } CursorState_e;
-
+    bool lastThumbClosed_ = false;
 private:
     static const GLfloat colors_[5][4];
     Leap::Vector pos_;

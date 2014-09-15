@@ -32,10 +32,6 @@ GlWidget::item_t::item_t(float pSize, texId_t pText)
 
 GlWidget::GlWidget(QWidget *parent) :
     Glview(100, parent),
-    maxRecordTimer_(0),
-    curentRecordTime_(0),
-    recording_(false),
-    playing_(false),
     selectionMode_(HandEvent::SINGLE),
     boxSize_(BOX_SIZE),
     gridSize_(0),
@@ -64,8 +60,6 @@ void GlWidget::initializeGL()
     loadTexture("../code/ressources/box.png", CRATE);
     loadTexture("../code/ressources/metal.jpg", METAL);
     writing_ = false;
-    recordTimer_.restart();
-    lastElapsedTime_ = recordTimer_.elapsed();
 
     // Just display the drawing even without any drawing yet
 
@@ -123,6 +117,7 @@ void GlWidget::paintGL()
     drawGrid();
 
     // Objects
+    updateShape();
     drawCurve(shape_);
     drawCursor();
     drawFocus();
@@ -326,15 +321,21 @@ void GlWidget::clearCurves(){
 
 void GlWidget::updateShape(){
     Cursor::CursorMode_e mode = cursor_.getMode();
-    Cursor::CursorState_e state = cursor_.getState();
+    int state = cursor_.getState();
 
     switch(mode){
         case Cursor::CURVE:
             switch(state){
-                case Cursor::STATE1: //hand opened
+                case Cursor::IDLE:
+                        shape_.newType(Shape::CURVE);
                     break;
-                case Cursor::STATE2: //thumb closed
-                    //Shape::line_t l = cursor_.getLastMove();
+                case Cursor::STATE1:
+                        qDebug() << shape_.getList().size();
+                        shape_.addLine(cursor_.getLastMove());
+                    break;
+                case Cursor::STATE2:
+                    cursor_.changeState(Cursor::IDLE);
+                    shapeList_.append(shape_);
                     break;
                 default:
                     break;
@@ -441,14 +442,16 @@ void GlWidget::customEvent(QEvent* pEvent)
        case HandEvent::Moved:
             //update cursor to our coordinates
             cursor_.slotMove(event->pos());
-            fingerPos = cursor_.getPos();
+            if(writing_ != event->writing())
+            {
+                cursor_.changeState(cursor_.getState()+1);
+
+            }
+            writing_ = event->writing();
+
             break;
 
        case HandEvent::Circle:
-            shape_.changeCircleCenter(cursor_.getPos(event->pos()));
-            shape_.changeCircleDirection(event->circleDirection_);
-            shape_.changeCircleNormal(event->circleNormal_);
-            shape_.changeCircleSize(event->circleSize_/100);
             break;
 
        case HandEvent::Slider:
@@ -508,40 +511,26 @@ void GlWidget::customEvent(QEvent* pEvent)
             }*/
             break;
         case HandEvent::Pinch:
-            if(isPinchLeft_ && isPinchRight_ && !newShape_)
-            {
-                shape_.newType(0);
-                newShape_ = true;
-            }
-
             if(event->pinchIsLeft())
             {
-                isPinchLeft_  = true;
-                shape_.changeLeft(cursor_.getPos(event->pos()));
+                cursor_.isPinchLeft_  = true;
+                cursor_.leftPinchPosition_   = cursor_.getPos(event->pos());
             }
             else
             {
-                isPinchRight_ = true;
-                shape_.changeRight(cursor_.getPos(event->pos()));
+                cursor_.isPinchRight_ = true;
+                cursor_.rightPinchPosition_ = cursor_.getPos(event->pos());
             }
 
             break;
         case HandEvent::Release:
             if(event->pinchIsLeft())
             {
-                isPinchLeft_  = false;
+                cursor_.isPinchLeft_  = false;
             }
             else
             {
-                isPinchRight_ = false;
-            }
-            if(!isPinchLeft_ && !isPinchRight_)
-            {
-                newShape_ = false;
-                foreach(Shape::line_t line, shape_.getList())
-                {
-                    //lineList_.append(line);
-                }
+                cursor_.isPinchRight_ = false;
             }
             break;
     default:

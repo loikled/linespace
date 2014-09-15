@@ -30,14 +30,13 @@ private:
 
     // correspond to both pinch left and right hand
     CursorMode_e mode_;
-    CursorState_e state_;
+    int state_;
 
     float size_;
     float sensitivity_;
 
     //to draw a line
     Leap::Vector lastFingerPos_;
-
 
 public:
     explicit Cursor(QObject *parent = 0);
@@ -46,14 +45,20 @@ public:
     const Leap::Vector getPos() const;
     const Leap::Vector getPos(const Leap::Vector& pos) const;
     Cursor::CursorMode_e getMode() const;
-    Cursor::CursorState_e getState() const;
+    int getState() const;
+    void changeState(int state);
     Shape::line_t getLastMove();
+    // Leap events
+    bool isPinchLeft_;
+    bool isPinchRight_;
+    Leap::Vector leftPinchPosition_;
+    Leap::Vector rightPinchPosition_;
+
 
 signals:
 
 public slots:
     void slotMove(const Leap::Vector& pos);
-    void slotChangeState(Cursor::CursorState_e mode);
     void slotNextMode();
 
 };

@@ -12,10 +12,11 @@ class Shape
 
 public:
     typedef enum {
-        LINE = 0,
-        CIRCLE = 1,
-        HELICOIDE = 2,
-        POLYGON = 3
+        CURVE = 0,
+        LINE = 1,
+        CIRCLE = 2,
+        HELICOIDE = 3,
+        POLYGON = 4
     } Shape_t;
 
 
@@ -37,6 +38,7 @@ public:
     void changeCircleNormal(Leap::Vector normal);
     void createCircle();
     void createHelicoide();
+    void addLine(line_t line);
     const QList<line_t> getList() const;
 
 private:

@@ -9,6 +9,9 @@ void Shape::newType(int type)
     lineList_.clear();
     switch(type)
     {
+        case Shape::CURVE :
+
+        break;
         case Shape::LINE :
             lineList_.append(line_t(Leap::Vector(-0.25,0,0),Leap::Vector(0.25,0,0)));
         break;
@@ -101,6 +104,11 @@ void Shape::changeCircleNormal(Leap::Vector normal)
 {
     normal_ = normal;
     createCircle();
+}
+
+void Shape::addLine(line_t line)
+{
+    lineList_.append(line);
 }
 
 const QList<Shape::line_t> Shape::getList() const

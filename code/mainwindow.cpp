@@ -49,9 +49,6 @@ void mainwindow::init(void)
     vlayout->addWidget(glView_);
     hLayout->addItem(vlayout);
 
-
-
-
     QMenu* menu = menuBar()->addMenu("&Display");
     QAction* actionStart = new QAction("Start/Stop", this);
     QAction* actionHide = new QAction("Hide Webcam", this);

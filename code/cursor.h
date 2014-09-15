@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include "leapmotion/Leap.h"
+#include "shape.h"
 
 class Cursor : public QObject
 {
@@ -34,6 +35,9 @@ private:
     float size_;
     float sensitivity_;
 
+    //to draw a line
+    Leap::Vector lastFingerPos_;
+
 
 public:
     explicit Cursor(QObject *parent = 0);
@@ -42,6 +46,8 @@ public:
     const Leap::Vector getPos() const;
     const Leap::Vector getPos(const Leap::Vector& pos) const;
     Cursor::CursorMode_e getMode() const;
+    Cursor::CursorState_e getState() const;
+    Shape::line_t getLastMove();
 
 signals:
 

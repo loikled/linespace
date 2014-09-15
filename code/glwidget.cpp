@@ -130,6 +130,7 @@ void GlWidget::paintGL()
     //drawCurve(shape_.getList());
     drawCursor();
     drawFocus();
+
     drawCurve(lineList_);
 }
 
@@ -375,6 +376,47 @@ void GlWidget::drawFocus(){
 
 void GlWidget::clearCurves(){
     lineList_.clear();
+}
+
+void GlWidget::updateShape(){
+    Cursor::CursorMode_e mode = cursor_.getMode();
+    Cursor::CursorState_e state = cursor_.getState();
+
+    switch(mode){
+        case Cursor::CURVE:
+            switch(state){
+                case Cursor::STATE1: //hand opened
+                    break;
+                case Cursor::STATE2: //thumb closed
+                    //Shape::line_t l = cursor_.getLastMove();
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case Cursor::SEGMENT:
+            switch(state){
+                case Cursor::STATE1:
+                    break;
+                case Cursor::STATE2:
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case Cursor::CIRCLE:
+            switch(state){
+                case Cursor::STATE1:
+                    break;
+                case Cursor::STATE2:
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
 }
 
 /*

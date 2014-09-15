@@ -16,6 +16,7 @@ public:
                   CIRCLE = 2,
                   SEGMENT = 3,
                   MOVE = 4,
+                  FOCUS = 5,
                   LAST} CursorMode_e;
 
     typedef enum {

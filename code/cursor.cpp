@@ -76,6 +76,9 @@ void Cursor::slotNextMode(){
             mode_ = MOVE;
             break;
        case MOVE:
+            mode_ = FOCUS;
+            break;
+       case FOCUS:
             mode_ = CURVE;
             break;
        default:

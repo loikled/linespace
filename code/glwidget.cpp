@@ -435,6 +435,16 @@ void GlWidget::updateShape(){
                     break;
             }
             break;
+       case Cursor::FOCUS:
+            {
+                int index = closestShapeIndex();
+                if (index >= 0){
+                    int size = shapeList_.size()/2;
+                    Leap::Vector f = shapeList_.at(index).getList()[size].firstPoint_;
+                    cam_.setFocus(f);
+                }
+            }
+            break;
 
         default:
             break;
@@ -543,25 +553,9 @@ void GlWidget::customEvent(QEvent* pEvent)
             break;
 
        case HandEvent::Circle:
-
             break;
 
        case HandEvent::Slider:
-/*
-            if(abs(event->sliderAngle()) < 55)
-            {
-                newCurrentRecordTime = curentRecordTime_ - (int)event->sliderAngle()/10;
-            }
-            else
-            {
-                newCurrentRecordTime = curentRecordTime_ - (int)event->sliderAngle();
-            }
-
-            if(newCurrentRecordTime > 0 && newCurrentRecordTime < maxRecordTimer_)
-            {
-                curentRecordTime_ = newCurrentRecordTime;
-            }
-            */
 /*
             if(abs(event->sliderAngle()) < 40)
             {

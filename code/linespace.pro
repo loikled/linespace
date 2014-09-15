@@ -13,6 +13,8 @@ TEMPLATE = app
 
 QMAKE_CXXFLAGS += -std=c++11
 
+LIBS += -L"$$_PRO_FILE_PWD_/leapmotion"
+
 INCLUDEPATH += /usr/local/include/opencv
 
 #opencv libraries
